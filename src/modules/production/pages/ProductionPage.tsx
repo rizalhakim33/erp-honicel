@@ -79,8 +79,14 @@ export default function ProductionPage() {
                       </div>
                    </div>
                    <div className="p-6 border-l border-zinc-100 flex items-center gap-2">
-                       <Button variant="outline" size="sm" className="rounded-none font-mono text-[10px] uppercase">Details</Button>
-                       <Button size="sm" className="bg-zinc-900 text-white rounded-none font-mono text-[10px] uppercase">Update_State</Button>
+                       <Button 
+                         onClick={() => toast.info(`Viewing details for ${wo.id}...`)}
+                         variant="outline" size="sm" className="rounded-none font-mono text-[10px] uppercase"
+                       >Details</Button>
+                       <Button 
+                         onClick={() => toast.success(`Updating state for ${wo.id}...`)}
+                         size="sm" className="bg-zinc-900 text-white rounded-none font-mono text-[10px] uppercase"
+                       >Update_State</Button>
                    </div>
                 </CardContent>
               </Card>
@@ -113,7 +119,10 @@ export default function ProductionPage() {
                       <TableCell className="font-mono text-xs text-zinc-600">{bom.comps} Items</TableCell>
                       <TableCell className="text-[10px] text-zinc-500 italic uppercase">{bom.process}</TableCell>
                       <TableCell className="text-right">
-                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0 cursor-pointer">
+                         <Button 
+                           onClick={() => toast.info(`Accessing BOM structure for ${bom.product}...`)}
+                           variant="ghost" size="sm" className="h-8 w-8 p-0 cursor-pointer"
+                         >
                             <ListTree className="w-3.5 h-3.5 text-zinc-400" />
                          </Button>
                       </TableCell>

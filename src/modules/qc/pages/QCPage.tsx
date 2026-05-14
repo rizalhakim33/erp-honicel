@@ -58,7 +58,10 @@ export default function QCPage() {
                   {check.label}
                 </div>
               ))}
-              <Button size="sm" variant="outline" className="w-full mt-4 text-[9px] uppercase font-bold tracking-widest h-8">
+              <Button 
+                onClick={() => toast.success("Verification sequence initiated")}
+                size="sm" variant="outline" className="w-full mt-4 text-[9px] uppercase font-bold tracking-widest h-8"
+              >
                 RUN_VERIFICATION
               </Button>
             </CardContent>
@@ -113,7 +116,10 @@ export default function QCPage() {
                        )}>{test.val} / {test.status}</span>
                     </TableCell>
                     <TableCell className="text-right">
-                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                       <Button 
+                         onClick={() => toast.info(`Viewing history for test ${test.id}`)}
+                         variant="ghost" size="sm" className="h-8 w-8 p-0"
+                       >
                           <History className="w-3.5 h-3.5 text-zinc-300" />
                        </Button>
                     </TableCell>

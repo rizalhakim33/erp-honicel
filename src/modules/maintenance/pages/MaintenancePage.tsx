@@ -63,7 +63,10 @@ export default function MaintenancePage() {
                       </div>
                     </div>
                   </div>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <Button 
+                    onClick={() => toast.info(`Accessing settings for ${tkt.id}...`)}
+                    variant="ghost" size="sm" className="h-8 w-8 p-0"
+                  >
                     <Settings2 className="w-4 h-4 text-zinc-400" />
                   </Button>
                 </div>
@@ -92,7 +95,10 @@ export default function MaintenancePage() {
                   <span className="text-zinc-400">12:30 - Backup successful</span>
                 </div>
               </div>
-              <Button variant="outline" size="sm" className="w-full border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 text-[9px] uppercase tracking-widest">
+              <Button 
+                onClick={() => toast.info("Opening master diagnostic logs...")}
+                variant="outline" size="sm" className="w-full border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 text-[9px] uppercase tracking-widest"
+              >
                 VIEW_ALL_LOGS
               </Button>
             </CardContent>

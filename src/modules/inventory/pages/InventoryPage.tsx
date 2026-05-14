@@ -1,12 +1,16 @@
 import { motion } from 'motion/react';
+import { useState } from 'react';
 import { Package, Search, Plus, Filter, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ItemTable } from '../components/ItemTable';
+import { AddItemDialog } from '../components/AddItemDialog';
 import { KPICard } from '@/components/ui/kpi-card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from 'sonner';
 
 export default function InventoryPage() {
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -16,7 +20,7 @@ export default function InventoryPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button 
-            onClick={() => toast.info("Accessing Secure Entry Protocol...")}
+            onClick={() => setIsAddDialogOpen(true)}
             size="sm" 
             className="bg-zinc-900 text-white hover:bg-zinc-800 text-[10px] font-bold uppercase tracking-widest h-9"
           >
@@ -25,6 +29,8 @@ export default function InventoryPage() {
           </Button>
         </div>
       </div>
+
+      <AddItemDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <KPICard title="Total SKUs" value="154" icon={Package} color="slate" />

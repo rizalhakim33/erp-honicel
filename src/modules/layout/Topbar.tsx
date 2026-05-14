@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Bell, Search, User, Menu, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -55,8 +56,8 @@ export const Topbar = ({ onOpenSidebar }: { onOpenSidebar: () => void }) => {
                 System Settings
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem>Console Access</DropdownMenuItem>
-            <DropdownMenuItem>Audit Logs</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => toast.info("Initializing Secure Console...")}>Console Access</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => toast.info("Fetching Audit Logs...")}>Audit Logs</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} className="text-red-600 font-bold">
               Terminate Session
