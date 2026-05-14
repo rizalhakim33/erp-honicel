@@ -3,15 +3,21 @@ import { productionService, WorkOrder } from '../services/productionService';
 
 interface ProductionState {
   workOrders: WorkOrder[];
+  boms: any[];
+  machines: any[];
   loading: boolean;
   error: string | null;
   fetchWorkOrders: () => Promise<void>;
+  fetchBoms: () => Promise<void>;
+  fetchMachines: () => Promise<void>;
   createWorkOrder: (wo: Omit<WorkOrder, 'id' | 'wo_number' | 'status' | 'produced_quantity'>) => Promise<void>;
   updateWOStatus: (id: string, status: WorkOrder['status']) => Promise<void>;
 }
 
 export const useProductionStore = create<ProductionState>((set, get) => ({
   workOrders: [],
+  boms: [],
+  machines: [],
   loading: false,
   error: null,
 
@@ -22,6 +28,24 @@ export const useProductionStore = create<ProductionState>((set, get) => ({
       set({ workOrders, loading: false });
     } catch (error: any) {
       set({ error: error.message, loading: false });
+    }
+  },
+
+  fetchBoms: async () => {
+    try {
+      const boms = await productionService.getBoms();
+      set({ boms });
+    } catch (error: any) {
+      set({ error: error.message });
+    }
+  },
+
+  fetchMachines: async () => {
+    try {
+      const machines = await productionService.getMachines();
+      set({ machines });
+    } catch (error: any) {
+      set({ error: error.message });
     }
   },
 

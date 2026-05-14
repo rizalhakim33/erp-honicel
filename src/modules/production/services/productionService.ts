@@ -58,5 +58,23 @@ export const productionService = {
     
     if (error) throw error;
     return data as WorkOrder;
+  },
+
+  async getBoms() {
+    const { data, error } = await supabase
+      .from('boms')
+      .select('*')
+      .order('name');
+    if (error) throw error;
+    return data;
+  },
+
+  async getMachines() {
+    const { data, error } = await supabase
+      .from('machines')
+      .select('*')
+      .order('name');
+    if (error) throw error;
+    return data;
   }
 };

@@ -78,12 +78,36 @@ export default function MaintenancePage() {
                         </div>
                       </div>
                     </div>
-                    <Button 
-                      onClick={() => toast.info(`Accessing settings for ${log.id}...`)}
-                      variant="ghost" size="sm" className="h-8 w-8 p-0"
-                    >
-                      <Settings2 className="w-4 h-4 text-zinc-400" />
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      {log.status === 'scheduled' && (
+                        <Button 
+                          onClick={() => {
+                            useMaintenanceStore.getState().updateLogStatus(log.id, 'in_progress');
+                            toast.success("Maintenance sequence started");
+                          }}
+                          variant="outline" size="sm" className="h-7 text-[9px] uppercase font-bold text-blue-600 rounded-none"
+                        >
+                          START
+                        </Button>
+                      )}
+                      {log.status === 'in_progress' && (
+                        <Button 
+                          onClick={() => {
+                            useMaintenanceStore.getState().updateLogStatus(log.id, 'completed');
+                            toast.success("Maintenance marked as completed");
+                          }}
+                          variant="outline" size="sm" className="h-7 text-[9px] uppercase font-bold text-green-600 rounded-none"
+                        >
+                          COMPLETE
+                        </Button>
+                      )}
+                      <Button 
+                        onClick={() => toast.info(`Accessing settings for ${log.id}...`)}
+                        variant="ghost" size="sm" className="h-8 w-8 p-0"
+                      >
+                        <Settings2 className="w-4 h-4 text-zinc-400" />
+                      </Button>
+                    </div>
                   </div>
                 ))
               ) : (

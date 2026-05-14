@@ -40,5 +40,16 @@ export const maintenanceService = {
     
     if (error) throw error;
     return data as MaintenanceLog;
+  },
+
+  async updateLogStatus(id: string, status: MaintenanceLog['status']) {
+    const { data, error } = await supabase
+      .from('maintenance_logs')
+      .update({ status, end_time: status === 'completed' ? new Date().toISOString() : null })
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
   }
 };

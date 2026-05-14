@@ -13,11 +13,12 @@ import { cn } from '@/lib/utils';
 
 export default function PurchasingPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
-  const { purchaseOrders, fetchPurchaseOrders, loading } = usePurchasingStore();
+  const { purchaseOrders, suppliers, fetchPurchaseOrders, fetchSuppliers, loading } = usePurchasingStore();
 
   React.useEffect(() => {
     fetchPurchaseOrders();
-  }, [fetchPurchaseOrders]);
+    fetchSuppliers();
+  }, [fetchPurchaseOrders, fetchSuppliers]);
 
   return (
     <div className="space-y-6">
@@ -141,29 +142,29 @@ export default function PurchasingPage() {
 
         <TabsContent value="suppliers" className="mt-0 outline-none">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              { name: 'Paper Solutions Inc', location: 'Singapore', category: 'Raw Materials', performance: 98 },
-              { name: 'Global Chemicals Ltd', location: 'Malaysia', category: 'Chemicals', performance: 92 },
-              { name: 'EcoPack Materials', location: 'Indonesia', category: 'Packaging', performance: 95 },
-            ].map((v) => (
-              <Card key={v.name} className="border border-zinc-200 rounded-xl shadow-none bg-white">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-8 h-8 bg-zinc-100 rounded flex items-center justify-center">
-                      <Building2 className="w-4 h-4 text-zinc-500" />
+            {suppliers.length > 0 ? (
+              suppliers.map((v) => (
+                <Card key={v.id} className="border border-zinc-200 rounded-xl shadow-none bg-white">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-8 h-8 bg-zinc-100 rounded flex items-center justify-center">
+                        <Building2 className="w-4 h-4 text-zinc-500" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-zinc-900 underline decoration-zinc-200 underline-offset-4">{v.name}</div>
+                        <div className="text-[10px] text-zinc-500 font-mono italic">{v.location || 'Unknown Location'}</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-sm font-bold text-zinc-900 underline decoration-zinc-200 underline-offset-4">{v.name}</div>
-                      <div className="text-[10px] text-zinc-500 font-mono italic">{v.location}</div>
+                    <div className="flex items-center justify-between border-t border-zinc-50 pt-3">
+                      <span className="text-[9px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold uppercase">{v.category || 'Vendor'}</span>
+                      <span className="text-[9px] font-mono text-zinc-400">Rating: {v.performance_rating || 'N/A'}%</span>
                     </div>
-                  </div>
-                  <div className="flex items-center justify-between border-t border-zinc-50 pt-3">
-                    <span className="text-[9px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold uppercase">{v.category}</span>
-                    <span className="text-[9px] font-mono text-zinc-400">Rating: {v.performance}%</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <div className="col-span-full p-12 text-center text-zinc-400 font-mono text-[10px] uppercase italic">No vendor records found</div>
+            )}
           </div>
         </TabsContent>
         <TabsContent value="receiving" className="mt-0 outline-none">
@@ -175,31 +176,37 @@ export default function PurchasingPage() {
                <Table>
                 <TableHeader className="bg-zinc-50">
                   <TableRow className="hover:bg-transparent border-b border-zinc-100">
-                    <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic">Arrival_Estimated</TableHead>
+                    <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic">Expected_Arrival</TableHead>
                     <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic">PO_Ref</TableHead>
-                    <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic">Carrier</TableHead>
+                    <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic">Vendor</TableHead>
                     <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic text-right">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {[
-                    { eta: '2024-05-15', ref: 'PO-2024-052', carrier: 'FastLogistics' },
-                    { eta: '2024-05-18', ref: 'PO-2024-055', carrier: 'TransOcean' },
-                  ].map((rcv) => (
-                    <TableRow key={rcv.ref} className="hover:bg-zinc-50 border-none transition-colors">
-                      <TableCell className="font-mono text-xs text-zinc-600">{rcv.eta}</TableCell>
-                      <TableCell className="text-xs font-semibold text-zinc-900">{rcv.ref}</TableCell>
-                      <TableCell className="text-[10px] text-zinc-500 uppercase italic">{rcv.carrier}</TableCell>
-                      <TableCell className="text-right">
-                         <Button 
-                           onClick={() => toast.success(`Initiating inspection protocol for ${rcv.ref}`)}
-                           size="sm" variant="ghost" className="h-8 py-0 px-2 text-[9px] font-bold uppercase tracking-widest"
-                         >
-                           PROCESS_RECEIPT
-                         </Button>
-                      </TableCell>
+                  {purchaseOrders.filter(po => po.status === 'pending').length > 0 ? (
+                    purchaseOrders.filter(po => po.status === 'pending').map((po) => (
+                      <TableRow key={po.id} className="hover:bg-zinc-50 border-none transition-colors">
+                        <TableCell className="font-mono text-xs text-zinc-600">{po.expected_arrival || 'TBA'}</TableCell>
+                        <TableCell className="text-xs font-semibold text-zinc-900">{po.po_number}</TableCell>
+                        <TableCell className="text-[10px] text-zinc-500 uppercase italic">{po.supplier_name || 'N/A'}</TableCell>
+                        <TableCell className="text-right">
+                           <Button 
+                             onClick={() => {
+                               usePurchasingStore.getState().updatePOStatus(po.id, 'received');
+                               toast.success(`Inventory updated for ${po.po_number}`);
+                             }}
+                             size="sm" variant="ghost" className="h-8 py-0 px-2 text-[9px] font-bold uppercase tracking-widest"
+                           >
+                             PROCESS_RECEIPT
+                           </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={4} className="h-24 text-center font-mono text-[10px] uppercase italic text-zinc-400">No pending inbound logistics</TableCell>
                     </TableRow>
-                  ))}
+                  )}
                 </TableBody>
                </Table>
             </CardContent>

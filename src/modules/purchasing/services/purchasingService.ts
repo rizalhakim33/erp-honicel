@@ -51,5 +51,14 @@ export const purchasingService = {
     
     if (error) throw error;
     return data as PurchaseOrder;
+  },
+
+  async getSuppliers() {
+    const { data, error } = await supabase
+      .from('suppliers')
+      .select('*')
+      .order('name');
+    if (error) throw error;
+    return data;
   }
 };

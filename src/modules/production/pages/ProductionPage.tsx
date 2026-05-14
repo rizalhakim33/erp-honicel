@@ -12,11 +12,13 @@ import { useProductionStore } from '../store/useProductionStore';
 
 export default function ProductionPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
-  const { workOrders, fetchWorkOrders, loading } = useProductionStore();
+  const { workOrders, boms, machines, fetchWorkOrders, fetchBoms, fetchMachines, loading } = useProductionStore();
 
   React.useEffect(() => {
     fetchWorkOrders();
-  }, [fetchWorkOrders]);
+    fetchBoms();
+    fetchMachines();
+  }, [fetchWorkOrders, fetchBoms, fetchMachines]);
 
   return (
     <div className="space-y-6">
@@ -149,30 +151,33 @@ export default function ProductionPage() {
                 <TableHeader className="bg-zinc-50">
                   <TableRow className="hover:bg-transparent border-b border-zinc-100">
                     <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic">FG_Product</TableHead>
-                    <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic">Components_Qty</TableHead>
+                    <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic">Description</TableHead>
                     <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic">Process_Flow</TableHead>
                     <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {[
-                    { product: 'Honeycomb Panel 20mm', comps: 4, process: 'Expander -> Lamination -> Cutting' },
-                    { product: 'Edge Guard V-Profile', comps: 2, process: 'Forming -> Pressing -> Packing' },
-                  ].map((bom) => (
-                    <TableRow key={bom.product} className="hover:bg-zinc-50 border-none">
-                      <TableCell className="text-xs font-bold text-zinc-900">{bom.product}</TableCell>
-                      <TableCell className="font-mono text-xs text-zinc-600">{bom.comps} Items</TableCell>
-                      <TableCell className="text-[10px] text-zinc-500 italic uppercase">{bom.process}</TableCell>
-                      <TableCell className="text-right">
-                         <Button 
-                           onClick={() => toast.info(`Accessing BOM structure for ${bom.product}...`)}
-                           variant="ghost" size="sm" className="h-8 w-8 p-0 cursor-pointer"
-                         >
-                            <ListTree className="w-3.5 h-3.5 text-zinc-400" />
-                         </Button>
-                      </TableCell>
+                  {boms.length > 0 ? (
+                    boms.map((bom) => (
+                      <TableRow key={bom.id} className="hover:bg-zinc-50 border-none">
+                        <TableCell className="text-xs font-bold text-zinc-900">{bom.name}</TableCell>
+                        <TableCell className="text-[10px] text-zinc-600 font-mono italic">{bom.description || 'N/A'}</TableCell>
+                        <TableCell className="text-[10px] text-zinc-500 italic uppercase">{bom.process_flow || 'Standard Process'}</TableCell>
+                        <TableCell className="text-right">
+                           <Button 
+                             onClick={() => toast.info(`Accessing BOM structure for ${bom.name}...`)}
+                             variant="ghost" size="sm" className="h-8 w-8 p-0 cursor-pointer"
+                           >
+                              <ListTree className="w-3.5 h-3.5 text-zinc-400" />
+                           </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={4} className="h-24 text-center font-mono text-[10px] uppercase italic text-zinc-400">No BOM records found</TableCell>
                     </TableRow>
-                  ))}
+                  )}
                 </TableBody>
                </Table>
             </CardContent>
@@ -186,21 +191,30 @@ export default function ProductionPage() {
                </CardHeader>
                <CardContent className="p-6">
                   <div className="space-y-4">
-                    {[
-                      { machine: 'LINE-01', rate: 94 },
-                      { machine: 'SLOTTER-03', rate: 78 },
-                      { machine: 'FORMER-02', rate: 82 },
-                    ].map(m => (
-                      <div key={m.machine} className="space-y-1.5">
-                        <div className="flex justify-between text-[10px] font-mono uppercase">
-                          <span className="text-zinc-600">{m.machine}</span>
-                          <span className="text-zinc-900 font-bold">{m.rate}%</span>
-                        </div>
-                        <div className="w-full bg-zinc-100 h-1 rounded-full overflow-hidden">
-                          <div className="bg-zinc-900 h-full" style={{ width: `${m.rate}%` }} />
-                        </div>
-                      </div>
-                    ))}
+                    {machines.length > 0 ? (
+                      machines.map(m => {
+                        const rate = Math.floor(Math.random() * (98 - 70 + 1) + 70); // Mocking rate based on machine, but fetching names
+                        return (
+                          <div key={m.id} className="space-y-1.5">
+                            <div className="flex justify-between text-[10px] font-mono uppercase">
+                              <span className="text-zinc-600">{m.name} ({m.status})</span>
+                              <span className="text-zinc-900 font-bold">{rate}%</span>
+                            </div>
+                            <div className="w-full bg-zinc-100 h-1 rounded-full overflow-hidden">
+                              <div 
+                                className={cn(
+                                  "h-full",
+                                  m.status === 'breakdown' ? "bg-red-500" : "bg-zinc-900"
+                                )} 
+                                style={{ width: `${m.status === 'breakdown' ? 0 : rate}%` }} 
+                              />
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="p-4 text-center font-mono text-[10px] uppercase text-zinc-400 italic">No machines registered</div>
+                    )}
                   </div>
                   <Button 
                     onClick={() => toast.info("Recalibrating utilization sensors...")}

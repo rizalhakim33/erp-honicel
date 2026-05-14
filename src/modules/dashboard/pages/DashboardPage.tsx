@@ -45,19 +45,21 @@ import { useMaintenanceStore } from '../../maintenance/store/useMaintenanceStore
 import * as React from 'react';
 
 export default function DashboardPage() {
-  const { workOrders, fetchWorkOrders, loading: prodLoading } = useProductionStore();
+  const { workOrders, machines, fetchWorkOrders, fetchMachines, loading: prodLoading } = useProductionStore();
   const { items, fetchItems } = useInventoryStore();
   const { logs, fetchLogs } = useMaintenanceStore();
 
   React.useEffect(() => {
     fetchWorkOrders();
+    fetchMachines();
     fetchItems();
     fetchLogs();
-  }, [fetchWorkOrders, fetchItems, fetchLogs]);
+  }, [fetchWorkOrders, fetchMachines, fetchItems, fetchLogs]);
 
   const activeWOs = workOrders.filter(wo => wo.status === 'in_progress' || wo.status === 'planned');
   const criticalStock = items.filter(i => i.stock <= i.min_stock);
   const recentWOs = workOrders.slice(0, 4);
+  const dashboardMachines = machines.slice(0, 3);
 
   return (
     <motion.div 
@@ -206,33 +208,37 @@ export default function DashboardPage() {
               <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Machine Center (Realtime)</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {[
-                { name: 'ROTARY-SLITTER-01', status: 'Online', health: 98, color: 'green' },
-                { name: 'FLUTE-LINE-04', status: 'Maintenance', health: 45, color: 'red' },
-                { name: 'FOLD-GLUER-PRO', status: 'Idle', health: 100, color: 'zinc' },
-              ].map((m) => (
-                <div key={m.name} className="flex flex-col gap-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={cn(
-                        "w-2 h-2 rounded-full",
-                        m.color === 'green' ? "bg-green-500 animate-pulse" : m.color === 'red' ? "bg-red-500" : "bg-zinc-500"
-                      )}></div>
-                      <span className="text-xs font-mono tracking-tight text-zinc-100">{m.name}</span>
+              {dashboardMachines.length > 0 ? (
+                dashboardMachines.map((m) => {
+                  const health = m.status === 'operational' ? 100 : m.status === 'maintenance' ? 45 : 10;
+                  const color = m.status === 'operational' ? 'green' : m.status === 'maintenance' ? 'amber' : 'red';
+                  return (
+                    <div key={m.id} className="flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={cn(
+                            "w-2 h-2 rounded-full",
+                            color === 'green' ? "bg-green-500 animate-pulse" : color === 'amber' ? "bg-amber-500" : "bg-red-500"
+                          )}></div>
+                          <span className="text-xs font-mono tracking-tight text-zinc-100">{m.name}</span>
+                        </div>
+                        <span className="text-[10px] font-mono text-zinc-500 uppercase">{m.status}</span>
+                      </div>
+                      <div className="h-1 w-full bg-zinc-800 rounded-full overflow-hidden">
+                        <div 
+                          className={cn(
+                            "h-full transition-all duration-1000",
+                            color === 'green' ? "bg-blue-500" : color === 'amber' ? "bg-amber-500" : "bg-red-500"
+                          )} 
+                          style={{ width: `${health}%` }}
+                        />
+                      </div>
                     </div>
-                    <span className="text-[10px] font-mono text-zinc-500 uppercase">{m.status}</span>
-                  </div>
-                  <div className="h-1 w-full bg-zinc-800 rounded-full overflow-hidden">
-                    <div 
-                      className={cn(
-                        "h-full transition-all duration-1000",
-                        m.color === 'green' ? "bg-blue-500" : m.color === 'red' ? "bg-red-500" : "bg-zinc-600"
-                      )} 
-                      style={{ width: `${m.health}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
+                  );
+                })
+              ) : (
+                <div className="p-4 text-center font-mono text-[10px] uppercase text-zinc-600 italic">No assets detected</div>
+              )}
               
               <div className="mt-8 pt-6 border-t border-zinc-800">
                 <div className="flex justify-between items-end">
@@ -247,8 +253,8 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <Button render={<Link to="/maintenance" />} className="w-full mt-6 bg-zinc-100 text-zinc-950 hover:bg-white text-[10px] font-bold uppercase tracking-widest h-10" size="sm">
-                SYSTEM_DIAGNOSTICS
+              <Button asChild className="w-full mt-6 bg-zinc-100 text-zinc-950 hover:bg-white text-[10px] font-bold uppercase tracking-widest h-10" size="sm">
+                <Link to="/maintenance">SYSTEM_DIAGNOSTICS</Link>
               </Button>
             </CardContent>
           </Card>

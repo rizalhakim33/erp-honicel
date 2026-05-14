@@ -3,15 +3,18 @@ import { purchasingService, PurchaseOrder } from '../services/purchasingService'
 
 interface PurchasingState {
   purchaseOrders: PurchaseOrder[];
+  suppliers: any[];
   loading: boolean;
   error: string | null;
   fetchPurchaseOrders: () => Promise<void>;
+  fetchSuppliers: () => Promise<void>;
   createPO: (po: Omit<PurchaseOrder, 'id' | 'po_number' | 'status' | 'order_date'>) => Promise<void>;
   updatePOStatus: (id: string, status: PurchaseOrder['status']) => Promise<void>;
 }
 
 export const usePurchasingStore = create<PurchasingState>((set, get) => ({
   purchaseOrders: [],
+  suppliers: [],
   loading: false,
   error: null,
 
@@ -44,6 +47,15 @@ export const usePurchasingStore = create<PurchasingState>((set, get) => ({
     } catch (error: any) {
       set({ error: error.message });
       throw error;
+    }
+  },
+
+  fetchSuppliers: async () => {
+    try {
+      const suppliers = await purchasingService.getSuppliers();
+      set({ suppliers });
+    } catch (error: any) {
+      set({ error: error.message });
     }
   },
 }));
