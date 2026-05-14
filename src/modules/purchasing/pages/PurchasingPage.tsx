@@ -1,14 +1,16 @@
 import * as React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Plus, Search, Building2, FileText, PackageCheck } from 'lucide-react';
+import { Plus, Search, Building2, FileText, PackageCheck, Filter, Download } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-
+import { AddPODialog } from '../components/AddPODialog';
 import { toast } from 'sonner';
 
 export default function PurchasingPage() {
+  const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -18,7 +20,7 @@ export default function PurchasingPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button 
-            onClick={() => toast.info("Opening Requisition Terminal...")}
+            onClick={() => setIsAddDialogOpen(true)}
             size="sm" 
             className="bg-zinc-900 text-white hover:bg-zinc-800 text-[10px] font-bold uppercase tracking-widest h-9"
           >
@@ -28,6 +30,8 @@ export default function PurchasingPage() {
         </div>
       </div>
 
+      <AddPODialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
+
       <Tabs defaultValue="po" className="w-full">
         <div className="flex items-center justify-between mb-6 border-b border-zinc-200">
           <TabsList className="bg-transparent h-auto p-0 gap-6">
@@ -35,6 +39,14 @@ export default function PurchasingPage() {
             <TabsTrigger value="suppliers" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent px-0 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 data-[state=active]:text-zinc-900 transition-all">Vendors_List</TabsTrigger>
             <TabsTrigger value="receiving" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent px-0 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 data-[state=active]:text-zinc-900 transition-all">Goods_Receipt</TabsTrigger>
           </TabsList>
+          <div className="hidden md:flex items-center gap-2 mb-2">
+            <Button variant="outline" size="sm" onClick={() => toast.info("Opening filter matrix...")} className="h-7 text-[9px] uppercase font-bold tracking-wider rounded-none">
+              <Filter className="w-3 h-3 mr-1" /> FILTER
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => toast.success("Generating procurement report...")} className="h-7 text-[9px] uppercase font-bold tracking-wider rounded-none">
+              <Download className="w-3 h-3 mr-1" /> EXPORT
+            </Button>
+          </div>
         </div>
         
         <TabsContent value="po" className="mt-0 outline-none">
@@ -64,7 +76,11 @@ export default function PurchasingPage() {
                     { id: 'PO-2024-052', vendor: 'Global Chemicals Ltd', date: '2024-05-10', amount: '$1,150.00', status: 'Shipped' },
                     { id: 'PO-2024-048', vendor: 'EcoPack Materials', date: '2024-05-08', amount: '$12,800.00', status: 'Received' },
                   ].map((po) => (
-                    <TableRow key={po.id} className="hover:bg-zinc-50 border-none transition-colors">
+                    <TableRow 
+                      key={po.id} 
+                      className="hover:bg-zinc-50 border-none transition-colors cursor-pointer"
+                      onClick={() => toast.info(`Accessing order details for ${po.id}`)}
+                    >
                       <TableCell className="font-mono text-xs text-zinc-600">{po.id}</TableCell>
                       <TableCell className="text-xs font-semibold text-zinc-900">{po.vendor}</TableCell>
                       <TableCell className="font-mono text-[10px] text-zinc-500">{po.date}</TableCell>
@@ -108,6 +124,45 @@ export default function PurchasingPage() {
               </Card>
             ))}
           </div>
+        </TabsContent>
+        <TabsContent value="receiving" className="mt-0 outline-none">
+          <Card className="border border-zinc-200 rounded-xl shadow-none bg-white overflow-hidden">
+            <CardHeader className="bg-zinc-50/50 border-b border-zinc-100 p-4">
+               <CardTitle className="text-xs font-bold uppercase tracking-widest text-zinc-500">Inbound_Logistics_Queue</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+               <Table>
+                <TableHeader className="bg-zinc-50">
+                  <TableRow className="hover:bg-transparent border-b border-zinc-100">
+                    <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic">Arrival_Estimated</TableHead>
+                    <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic">PO_Ref</TableHead>
+                    <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic">Carrier</TableHead>
+                    <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic text-right">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {[
+                    { eta: '2024-05-15', ref: 'PO-2024-052', carrier: 'FastLogistics' },
+                    { eta: '2024-05-18', ref: 'PO-2024-055', carrier: 'TransOcean' },
+                  ].map((rcv) => (
+                    <TableRow key={rcv.ref} className="hover:bg-zinc-50 border-none transition-colors">
+                      <TableCell className="font-mono text-xs text-zinc-600">{rcv.eta}</TableCell>
+                      <TableCell className="text-xs font-semibold text-zinc-900">{rcv.ref}</TableCell>
+                      <TableCell className="text-[10px] text-zinc-500 uppercase italic">{rcv.carrier}</TableCell>
+                      <TableCell className="text-right">
+                         <Button 
+                           onClick={() => toast.success(`Initiating inspection protocol for ${rcv.ref}`)}
+                           size="sm" variant="ghost" className="h-8 py-0 px-2 text-[9px] font-bold uppercase tracking-widest"
+                         >
+                           PROCESS_RECEIPT
+                         </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+               </Table>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
