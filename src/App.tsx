@@ -5,6 +5,9 @@ import InventoryPage from './modules/inventory/pages/InventoryPage';
 import PurchasingPage from './modules/purchasing/pages/PurchasingPage';
 import ProductionPage from './modules/production/pages/ProductionPage';
 import ReportsPage from './modules/reports/pages/ReportsPage';
+import MaintenancePage from './modules/maintenance/pages/MaintenancePage';
+import QCPage from './modules/qc/pages/QCPage';
+import SettingsPage from './modules/settings/pages/SettingsPage';
 import { Toaster } from '@/components/ui/sonner';
 
 export default function App() {
@@ -17,8 +20,9 @@ export default function App() {
           <Route path="/purchasing" element={<PurchasingPage />} />
           <Route path="/production" element={<ProductionPage />} />
           <Route path="/reports" element={<ReportsPage />} />
-          <Route path="/maintenance" element={<div className="p-8 font-mono text-zinc-400 uppercase">[DECRYPTING MAINTENANCE_LOGS...]</div>} />
-          <Route path="/qc" element={<div className="p-8 font-mono text-zinc-400 uppercase">[SCANNING QUALITY_CONTROL_UNIT...]</div>} />
+          <Route path="/maintenance" element={<MaintenancePage />} />
+          <Route path="/qc" element={<QCPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

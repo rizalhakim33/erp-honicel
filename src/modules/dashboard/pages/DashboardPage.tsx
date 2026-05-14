@@ -1,4 +1,5 @@
 import { motion } from 'motion/react';
+import { Link } from 'react-router-dom';
 import { 
   Factory, 
   Package, 
@@ -67,6 +68,7 @@ export default function DashboardPage() {
             change={5.2} 
             icon={Factory} 
             color="blue"
+            href="/production"
           />
         </motion.div>
         <motion.div variants={item}>
@@ -77,6 +79,7 @@ export default function DashboardPage() {
             change={-2.1} 
             icon={Activity} 
             color="blue"
+            href="/production"
           />
         </motion.div>
         <motion.div variants={item}>
@@ -86,6 +89,7 @@ export default function DashboardPage() {
             unit="CRITICAL" 
             icon={AlertTriangle} 
             color="red"
+            href="/inventory"
           />
         </motion.div>
         <motion.div variants={item}>
@@ -96,6 +100,7 @@ export default function DashboardPage() {
             change={1.2} 
             icon={TrendingUp} 
             color="green"
+            href="/reports"
           />
         </motion.div>
       </div>
@@ -106,7 +111,9 @@ export default function DashboardPage() {
           <Card className="border border-zinc-200 rounded-xl shadow-none bg-white overflow-hidden flex flex-col h-full">
             <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-zinc-100 bg-zinc-50/50">
               <CardTitle className="text-xs font-bold uppercase tracking-wider text-zinc-700">Active Production Line</CardTitle>
-              <Button variant="ghost" size="sm" className="text-zinc-600 hover:text-zinc-900 font-mono text-[10px] uppercase tracking-tight">MANAGE_ALL</Button>
+              <Button asChild variant="ghost" size="sm" className="text-zinc-600 hover:text-zinc-900 font-mono text-[10px] uppercase tracking-tight">
+                <Link to="/production">MANAGE_ALL</Link>
+              </Button>
             </CardHeader>
             <CardContent className="p-0">
               <Table>
@@ -216,8 +223,8 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <Button className="w-full mt-6 bg-zinc-100 text-zinc-950 hover:bg-white text-[10px] font-bold uppercase tracking-widest h-10" size="sm">
-                SYSTEM_DIAGNOSTICS
+              <Button asChild className="w-full mt-6 bg-zinc-100 text-zinc-950 hover:bg-white text-[10px] font-bold uppercase tracking-widest h-10" size="sm">
+                <Link to="/maintenance">SYSTEM_DIAGNOSTICS</Link>
               </Button>
             </CardContent>
           </Card>

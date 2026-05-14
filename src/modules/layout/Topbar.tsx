@@ -1,4 +1,5 @@
-import { Bell, Search, User, Menu } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Bell, Search, User, Menu, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
   DropdownMenu, 
@@ -25,11 +26,11 @@ export const Topbar = ({ onOpenSidebar }: { onOpenSidebar: () => void }) => {
         <Button variant="ghost" size="icon" className="lg:hidden p-0" onClick={onOpenSidebar}>
           <Menu className="w-5 h-5" />
         </Button>
-        <div className="flex items-center text-[11px] text-zinc-500 font-mono tracking-tight">
+        <Link to="/" className="flex items-center text-[11px] text-zinc-500 font-mono tracking-tight hover:opacity-80 transition-opacity">
           <span className="hover:text-zinc-900 cursor-pointer">CORE-ERP</span>
           <span className="mx-2 text-zinc-300">/</span>
           <span className="text-zinc-900 font-bold uppercase tracking-wider">Operations Dashboard</span>
-        </div>
+        </Link>
       </div>
 
       <div className="flex items-center gap-4">
@@ -48,10 +49,16 @@ export const Topbar = ({ onOpenSidebar }: { onOpenSidebar: () => void }) => {
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>System Administrator</DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link to="/settings" className="flex items-center">
+                <Settings className="w-4 h-4 mr-2" />
+                System Settings
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem>Console Access</DropdownMenuItem>
             <DropdownMenuItem>Audit Logs</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+            <DropdownMenuItem onClick={handleLogout} className="text-red-600 font-bold">
               Terminate Session
             </DropdownMenuItem>
           </DropdownMenuContent>

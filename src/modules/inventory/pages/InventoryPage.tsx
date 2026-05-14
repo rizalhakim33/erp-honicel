@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ItemTable } from '../components/ItemTable';
 import { KPICard } from '@/components/ui/kpi-card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { toast } from 'sonner';
 
 export default function InventoryPage() {
   return (
@@ -14,7 +15,11 @@ export default function InventoryPage() {
           <p className="text-zinc-500 font-mono text-[10px] uppercase tracking-wider mt-1">LOGISTICS / WAREHOUSE_A7_SECTOR</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button size="sm" className="bg-zinc-900 text-white hover:bg-zinc-800 text-[10px] font-bold uppercase tracking-widest h-9">
+          <Button 
+            onClick={() => toast.info("Accessing Secure Entry Protocol...")}
+            size="sm" 
+            className="bg-zinc-900 text-white hover:bg-zinc-800 text-[10px] font-bold uppercase tracking-widest h-9"
+          >
             <Plus className="w-3.5 h-3.5 mr-2" />
             SECURE_ENTRY
           </Button>

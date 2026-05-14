@@ -1,4 +1,4 @@
-import * as React from "react"
+import { Link } from "react-router-dom"
 import { LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Card, CardContent } from "@/components/ui/card"
@@ -11,6 +11,7 @@ interface KPICardProps {
   icon: LucideIcon
   color?: "slate" | "orange" | "blue" | "green" | "red"
   loading?: boolean
+  href?: string
 }
 
 const colorVariants = {
@@ -28,10 +29,14 @@ export function KPICard({
   change, 
   icon: Icon, 
   color = "slate",
-  loading 
+  loading,
+  href
 }: KPICardProps) {
-  return (
-    <Card className="overflow-hidden border border-zinc-200 rounded-xl shadow-none bg-white">
+  const content = (
+    <Card className={cn(
+      "overflow-hidden border border-zinc-200 rounded-xl shadow-none bg-white",
+      href && "hover:border-zinc-300 hover:bg-zinc-50/50 transition-all cursor-pointer"
+    )}>
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-1">
           <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 italic">{title}</p>
@@ -69,4 +74,10 @@ export function KPICard({
       </CardContent>
     </Card>
   )
+
+  if (href) {
+    return <Link to={href}>{content}</Link>
+  }
+
+  return content
 }

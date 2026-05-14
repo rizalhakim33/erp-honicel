@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
+import { toast } from 'sonner';
+
 export default function PurchasingPage() {
   return (
     <div className="space-y-6">
@@ -15,7 +17,11 @@ export default function PurchasingPage() {
           <p className="text-zinc-500 font-mono text-[10px] uppercase tracking-wider mt-1">Supply_Chain / Procurement_Matrix</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button size="sm" className="bg-zinc-900 text-white hover:bg-zinc-800 text-[10px] font-bold uppercase tracking-widest h-9">
+          <Button 
+            onClick={() => toast.info("Opening Requisition Terminal...")}
+            size="sm" 
+            className="bg-zinc-900 text-white hover:bg-zinc-800 text-[10px] font-bold uppercase tracking-widest h-9"
+          >
             <Plus className="w-3.5 h-3.5 mr-2" />
             NEW_REQUISITION
           </Button>
