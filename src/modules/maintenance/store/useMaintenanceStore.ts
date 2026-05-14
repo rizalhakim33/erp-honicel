@@ -6,7 +6,7 @@ interface MaintenanceState {
   loading: boolean;
   error: string | null;
   fetchLogs: () => Promise<void>;
-  createLog: (log: Omit<MaintenanceLog, 'id' | 'status'>) => Promise<void>;
+  createLog: (log: Omit<MaintenanceLog, 'id'>) => Promise<void>;
 }
 
 export const useMaintenanceStore = create<MaintenanceState>((set, get) => ({

@@ -5,10 +5,10 @@ export interface MaintenanceLog {
   machine_id: string;
   type: 'preventive' | 'corrective';
   description: string;
-  technician_name: string;
+  technician_name?: string;
   start_time: string;
-  end_time: string | null;
-  costs: number;
+  end_time?: string | null;
+  costs?: number;
   machine_name?: string;
   status?: string;
 }
@@ -31,7 +31,7 @@ export const maintenanceService = {
     })) as MaintenanceLog[];
   },
 
-  async createLog(log: Omit<MaintenanceLog, 'id' | 'status'>) {
+  async createLog(log: Omit<MaintenanceLog, 'id'>) {
     const { data, error } = await supabase
       .from('maintenance_logs')
       .insert([log])

@@ -115,7 +115,7 @@ export default function DashboardPage() {
             value={logs.length.toString()} 
             unit="RECORDS" 
             icon={Clock} 
-            color="zinc"
+            color="slate"
             href="/maintenance"
           />
         </motion.div>
