@@ -50,11 +50,9 @@ export const Topbar = ({ onOpenSidebar }: { onOpenSidebar: () => void }) => {
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>System Administrator</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link to="/settings" className="flex items-center">
-                <Settings className="w-4 h-4 mr-2" />
-                System Settings
-              </Link>
+            <DropdownMenuItem render={<Link to="/settings" className="flex items-center" />}>
+              <Settings className="w-4 h-4 mr-2" />
+              System Settings
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => toast.info("Initializing Secure Console...")}>Console Access</DropdownMenuItem>
             <DropdownMenuItem onClick={() => toast.info("Fetching Audit Logs...")}>Audit Logs</DropdownMenuItem>

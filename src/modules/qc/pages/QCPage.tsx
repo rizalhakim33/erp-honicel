@@ -15,7 +15,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
+import { useQCStore } from '../store/useQCStore';
+
+import { AddQCLogDialog } from '../components/AddQCLogDialog';
+
 export default function QCPage() {
+  const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
+  const { logs, fetchLogs, loading } = useQCStore();
+
+  React.useEffect(() => {
+    fetchLogs();
+  }, [fetchLogs]);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -25,7 +36,7 @@ export default function QCPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button 
-            onClick={() => toast.info("Initiating High-Resolution Scanner...")}
+            onClick={() => setIsAddDialogOpen(true)}
             size="sm" 
             className="bg-zinc-900 text-white hover:bg-zinc-800 text-[10px] font-bold uppercase tracking-widest h-9"
           >
@@ -34,6 +45,8 @@ export default function QCPage() {
           </Button>
         </div>
       </div>
+
+      <AddQCLogDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1 space-y-6">
@@ -93,38 +106,44 @@ export default function QCPage() {
               <TableHeader className="bg-zinc-50">
                 <TableRow className="hover:bg-transparent border-b border-zinc-100">
                   <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic">Test_ID</TableHead>
-                  <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic">Batch_Ref</TableHead>
-                  <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic">Metric</TableHead>
+                  <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic">WO_Ref</TableHead>
+                  <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic">Check_Type</TableHead>
                   <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic text-right">Result</TableHead>
                   <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic text-right">Auth</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {[
-                  { id: 'T-992', batch: 'HC-055', metric: 'Moisture', val: '5.2%', status: 'Pass' },
-                  { id: 'T-995', batch: 'CB-012', metric: 'Burst_P', val: '850kPA', status: 'Fail' },
-                  { id: 'T-998', batch: 'KL-440', metric: 'GSM_Var', val: '150.1', status: 'Pass' },
-                ].map((test) => (
-                  <TableRow key={test.id} className="hover:bg-zinc-50 border-none">
-                    <TableCell className="font-mono text-xs text-zinc-500">{test.id}</TableCell>
-                    <TableCell className="text-xs font-bold text-zinc-900">{test.batch}</TableCell>
-                    <TableCell className="text-[10px] font-mono text-zinc-400 uppercase">{test.metric}</TableCell>
-                    <TableCell className="text-right">
-                       <span className={cn(
-                         "px-2 py-0.5 text-[9px] rounded-sm font-bold uppercase",
-                         test.status === 'Pass' ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                       )}>{test.val} / {test.status}</span>
-                    </TableCell>
-                    <TableCell className="text-right">
-                       <Button 
-                         onClick={() => toast.info(`Viewing history for test ${test.id}`)}
-                         variant="ghost" size="sm" className="h-8 w-8 p-0"
-                       >
-                          <History className="w-3.5 h-3.5 text-zinc-300" />
-                       </Button>
-                    </TableCell>
+                {loading ? (
+                  <TableRow>
+                     <TableCell colSpan={5} className="h-24 text-center font-mono text-[10px] uppercase italic text-zinc-400">Downloading telemetry data...</TableCell>
                   </TableRow>
-                ))}
+                ) : logs.length > 0 ? (
+                  logs.map((test) => (
+                    <TableRow key={test.id} className="hover:bg-zinc-50 border-none transition-colors">
+                      <TableCell className="font-mono text-[9px] text-zinc-400">{test.id.substring(0, 8)}</TableCell>
+                      <TableCell className="text-xs font-bold text-zinc-900">{test.wo_number || 'Internal_Batch'}</TableCell>
+                      <TableCell className="text-[10px] font-mono text-zinc-400 uppercase">{test.check_type}</TableCell>
+                      <TableCell className="text-right">
+                         <span className={cn(
+                           "px-2 py-0.5 text-[9px] rounded-sm font-bold uppercase",
+                           test.status === 'pass' ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                         )}>{test.status}</span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                         <Button 
+                           onClick={() => toast.info(`Viewing history for test ${test.id}`)}
+                           variant="ghost" size="sm" className="h-8 w-8 p-0"
+                         >
+                            <History className="w-3.5 h-3.5 text-zinc-300" />
+                         </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                     <TableCell colSpan={5} className="h-24 text-center font-mono text-[10px] uppercase italic text-zinc-400">No QA records detected in scan buffer</TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </CardContent>

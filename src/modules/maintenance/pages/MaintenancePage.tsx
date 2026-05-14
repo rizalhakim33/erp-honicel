@@ -14,7 +14,18 @@ import {
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
+import { useMaintenanceStore } from '../store/useMaintenanceStore';
+
+import { AddMaintenanceLogDialog } from '../components/AddMaintenanceLogDialog';
+
 export default function MaintenancePage() {
+  const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
+  const { logs, fetchLogs, loading } = useMaintenanceStore();
+
+  React.useEffect(() => {
+    fetchLogs();
+  }, [fetchLogs]);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -24,7 +35,7 @@ export default function MaintenancePage() {
         </div>
         <div className="flex items-center gap-2">
           <Button 
-            onClick={() => toast.info("Opening Asset Repair Scheduler...")}
+            onClick={() => setIsAddDialogOpen(true)}
             size="sm" 
             className="bg-zinc-900 text-white hover:bg-zinc-800 text-[10px] font-bold uppercase tracking-widest h-9"
           >
@@ -34,43 +45,50 @@ export default function MaintenancePage() {
         </div>
       </div>
 
+      <AddMaintenanceLogDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="border border-zinc-200 rounded-xl shadow-none bg-white lg:col-span-2">
           <CardHeader className="bg-zinc-50/50 border-b border-zinc-100 p-4">
-            <CardTitle className="text-xs font-bold uppercase tracking-widest text-zinc-500">Active Service Tickets</CardTitle>
+            <CardTitle className="text-xs font-bold uppercase tracking-widest text-zinc-500">Service Tickets / Logs</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y divide-zinc-100">
-              {[
-                { id: 'TKT-104', machine: 'FLUTE-LINE-04', issue: 'Hydraulic Pressure Variance', status: 'Urgent', time: '2h ago' },
-                { id: 'TKT-108', machine: 'ROTARY-SLITTER-01', issue: 'Blade Alignment Calibration', status: 'Scheduled', time: 'Tomorrow' },
-                { id: 'TKT-112', machine: 'FOLD-GLUER-PRO', issue: 'Software Firmware Update', status: 'Low', time: 'Next week' },
-              ].map((tkt) => (
-                <div key={tkt.id} className="p-4 flex items-center justify-between hover:bg-zinc-50 transition-colors">
-                  <div className="flex items-start gap-4">
-                    <div className={cn(
-                      "mt-1 w-2 h-2 rounded-full",
-                      tkt.status === 'Urgent' ? "bg-red-500 animate-pulse" : tkt.status === 'Scheduled' ? "bg-blue-500" : "bg-zinc-300"
-                    )}></div>
-                    <div>
-                      <div className="text-sm font-bold text-zinc-900 uppercase tracking-tight">{tkt.machine}</div>
-                      <div className="text-[10px] text-zinc-500 font-mono">{tkt.issue}</div>
-                      <div className="mt-1 flex items-center gap-2">
-                        <span className="text-[9px] font-mono text-zinc-400">REF_{tkt.id}</span>
-                        <span className="text-[9px] font-mono text-zinc-400 flex items-center gap-1">
-                          <Clock className="w-3 h-3" /> {tkt.time}
-                        </span>
+              {loading ? (
+                <div className="p-12 text-center text-zinc-400 font-mono text-[10px] uppercase italic">Synchronizing with field sensors...</div>
+              ) : logs.length > 0 ? (
+                logs.map((log) => (
+                  <div key={log.id} className="p-4 flex items-center justify-between hover:bg-zinc-50 transition-colors">
+                    <div className="flex items-start gap-4">
+                      <div className={cn(
+                        "mt-1 w-2 h-2 rounded-full",
+                        log.type === 'corrective' ? "bg-red-500 animate-pulse" : "bg-blue-500"
+                      )}></div>
+                      <div>
+                        <div className="text-sm font-bold text-zinc-900 uppercase tracking-tight">{log.machine_name || 'Generic Asset'}</div>
+                        <div className="text-[10px] text-zinc-500 font-mono italic">{log.description}</div>
+                        <div className="mt-1 flex items-center gap-2">
+                          <span className="text-[9px] font-mono text-zinc-400">REF_{log.id.substring(0, 8)}</span>
+                          <span className="text-[9px] font-mono text-zinc-400 flex items-center gap-1">
+                            <Clock className="w-3 h-3" /> {new Date(log.start_time).toLocaleDateString()}
+                          </span>
+                          <Badge variant="outline" className="text-[8px] h-4 rounded-none border-zinc-200 text-zinc-500 uppercase font-bold tracking-widest">
+                            {log.status}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
+                    <Button 
+                      onClick={() => toast.info(`Accessing settings for ${log.id}...`)}
+                      variant="ghost" size="sm" className="h-8 w-8 p-0"
+                    >
+                      <Settings2 className="w-4 h-4 text-zinc-400" />
+                    </Button>
                   </div>
-                  <Button 
-                    onClick={() => toast.info(`Accessing settings for ${tkt.id}...`)}
-                    variant="ghost" size="sm" className="h-8 w-8 p-0"
-                  >
-                    <Settings2 className="w-4 h-4 text-zinc-400" />
-                  </Button>
-                </div>
-              ))}
+                ))
+              ) : (
+                <div className="p-12 text-center text-zinc-400 font-mono text-[10px] uppercase italic">No active maintenance cycles detected</div>
+              )}
             </div>
           </CardContent>
         </Card>

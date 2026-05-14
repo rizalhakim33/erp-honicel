@@ -8,8 +8,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { AddPODialog } from '../components/AddPODialog';
 import { toast } from 'sonner';
 
+import { usePurchasingStore } from '../store/usePurchasingStore';
+import { cn } from '@/lib/utils';
+
 export default function PurchasingPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
+  const { purchaseOrders, fetchPurchaseOrders, loading } = usePurchasingStore();
+
+  React.useEffect(() => {
+    fetchPurchaseOrders();
+  }, [fetchPurchaseOrders]);
 
   return (
     <div className="space-y-6">
@@ -60,7 +68,7 @@ export default function PurchasingPage() {
                </div>
             </CardHeader>
             <CardContent className="p-0">
-              <Table>
+               <Table>
                 <TableHeader className="bg-zinc-50">
                   <TableRow className="hover:bg-transparent border-b border-zinc-100">
                     <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic">PO #</TableHead>
@@ -68,32 +76,65 @@ export default function PurchasingPage() {
                     <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic">Order Date</TableHead>
                     <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic text-right">Amount</TableHead>
                     <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic text-right">Status</TableHead>
+                    <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {[
-                    { id: 'PO-2024-055', vendor: 'Paper Solutions Inc', date: '2024-05-12', amount: '$4,200.00', status: 'Pending' },
-                    { id: 'PO-2024-052', vendor: 'Global Chemicals Ltd', date: '2024-05-10', amount: '$1,150.00', status: 'Shipped' },
-                    { id: 'PO-2024-048', vendor: 'EcoPack Materials', date: '2024-05-08', amount: '$12,800.00', status: 'Received' },
-                  ].map((po) => (
-                    <TableRow 
-                      key={po.id} 
-                      className="hover:bg-zinc-50 border-none transition-colors cursor-pointer"
-                      onClick={() => toast.info(`Accessing order details for ${po.id}`)}
-                    >
-                      <TableCell className="font-mono text-xs text-zinc-600">{po.id}</TableCell>
-                      <TableCell className="text-xs font-semibold text-zinc-900">{po.vendor}</TableCell>
-                      <TableCell className="font-mono text-[10px] text-zinc-500">{po.date}</TableCell>
-                      <TableCell className="text-right font-mono text-xs text-zinc-900">{po.amount}</TableCell>
-                      <TableCell className="text-right">
-                        <span className="px-2 py-0.5 text-[9px] rounded-sm bg-zinc-100 text-zinc-600 font-bold uppercase tracking-tighter">
-                          {po.status}
-                        </span>
-                      </TableCell>
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="h-24 text-center font-mono text-[10px] uppercase italic text-zinc-400">Syncing with procurement gateway...</TableCell>
                     </TableRow>
-                  ))}
+                  ) : purchaseOrders.length > 0 ? (
+                    purchaseOrders.map((po) => (
+                      <TableRow 
+                        key={po.id} 
+                        className="hover:bg-zinc-50 border-none transition-colors"
+                      >
+                        <TableCell className="font-mono text-xs text-zinc-600">{po.po_number}</TableCell>
+                        <TableCell className="text-xs font-semibold text-zinc-900">{po.supplier_name || 'Restricted Vendor'}</TableCell>
+                        <TableCell className="font-mono text-[10px] text-zinc-500">{new Date(po.order_date).toLocaleDateString()}</TableCell>
+                        <TableCell className="text-right font-mono text-xs text-zinc-900">${po.total_amount?.toLocaleString()}</TableCell>
+                        <TableCell className="text-right">
+                          <span className={cn(
+                            "px-2 py-0.5 text-[9px] rounded-sm font-bold uppercase tracking-tighter",
+                            po.status === 'received' ? "bg-green-100 text-green-700" : po.status === 'pending' ? "bg-amber-100 text-amber-700" : "bg-zinc-100 text-zinc-500"
+                          )}>
+                            {po.status}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {po.status === 'draft' && (
+                            <Button 
+                              onClick={() => {
+                                usePurchasingStore.getState().updatePOStatus(po.id, 'pending');
+                                toast.success(`PO ${po.po_number} submitted for approval`);
+                              }}
+                              variant="ghost" size="sm" className="h-7 text-[9px] uppercase font-bold"
+                            >
+                              SUBMIT_PO
+                            </Button>
+                          )}
+                          {po.status === 'pending' && (
+                            <Button 
+                              onClick={() => {
+                                usePurchasingStore.getState().updatePOStatus(po.id, 'received');
+                                toast.success(`PO ${po.po_number} marked as received`);
+                              }}
+                              variant="ghost" size="sm" className="h-7 text-[9px] uppercase font-bold text-green-600"
+                            >
+                              RECEIVE_GOODS
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={6} className="h-24 text-center font-mono text-[10px] uppercase italic text-zinc-400">No procurement records found in local registry</TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
-              </Table>
+               </Table>
             </CardContent>
           </Card>
         </TabsContent>

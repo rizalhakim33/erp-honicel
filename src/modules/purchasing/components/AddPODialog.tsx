@@ -43,9 +43,13 @@ interface AddPODialogProps {
   onSuccess?: () => void;
 }
 
+import { usePurchasingStore } from "../store/usePurchasingStore";
+import { supabase } from "@/lib/supabase";
+
 export function AddPODialog({ open, onOpenChange, onSuccess }: AddPODialogProps) {
   const [loading, setLoading] = React.useState(false);
   const [suppliers, setSuppliers] = React.useState<{id: string, name: string}[]>([]);
+  const { createPO, fetchPurchaseOrders } = usePurchasingStore();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -57,24 +61,26 @@ export function AddPODialog({ open, onOpenChange, onSuccess }: AddPODialogProps)
   });
 
   React.useEffect(() => {
-    // Mock fetch suppliers
-    setSuppliers([
-      { id: 's1', name: 'Paper Solutions Inc' },
-      { id: 's2', name: 'Global Chemicals Ltd' },
-      { id: 's3', name: 'EcoPack Materials' },
-    ]);
-  }, []);
+    async function loadSuppliers() {
+      const { data } = await supabase.from('suppliers').select('id, name').order('name');
+      if (data) setSuppliers(data);
+    }
+    if (open) {
+      loadSuppliers();
+    }
+  }, [open]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
     try {
-      await purchasingService.createPO({
+      await createPO({
         supplier_id: values.supplier_id,
         total_amount: values.total_amount,
         notes: values.notes || null,
         expected_arrival: null,
       });
       toast.success("Purchase order created successfully");
+      await fetchPurchaseOrders();
       onOpenChange(false);
       form.reset();
       onSuccess?.();

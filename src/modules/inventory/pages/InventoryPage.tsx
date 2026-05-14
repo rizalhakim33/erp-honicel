@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { useState } from 'react';
-import { Package, Search, Plus, Filter, Download } from 'lucide-react';
+import { Package, Search, Plus, Filter, Download, AlertTriangle, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ItemTable } from '../components/ItemTable';
 import { AddItemDialog } from '../components/AddItemDialog';
@@ -8,8 +8,19 @@ import { KPICard } from '@/components/ui/kpi-card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from 'sonner';
 
+import { useInventoryStore } from '../store/useInventoryStore';
+import * as React from 'react';
+
 export default function InventoryPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const { items, fetchItems, loading } = useInventoryStore();
+
+  React.useEffect(() => {
+    fetchItems();
+  }, [fetchItems]);
+
+  const totalSKUs = items.length;
+  const criticalItems = items.filter(i => i.stock <= i.min_stock).length;
 
   return (
     <div className="space-y-6">
@@ -33,9 +44,9 @@ export default function InventoryPage() {
       <AddItemDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <KPICard title="Total SKUs" value="154" icon={Package} color="slate" />
-        <KPICard title="Stock Value" value="$42,500" icon={Package} color="blue" />
-        <KPICard title="Inventory Turnover" value="4.2x" icon={Package} color="green" />
+        <KPICard title="Total SKUs" value={totalSKUs.toString()} icon={Package} color="slate" />
+        <KPICard title="Critical items" value={criticalItems.toString()} icon={AlertTriangle} color="red" />
+        <KPICard title="Inventory health" value="Optimal" icon={TrendingUp} color="green" />
       </div>
 
       <Tabs defaultValue="all" className="w-full">

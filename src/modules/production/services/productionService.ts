@@ -31,6 +31,23 @@ export const productionService = {
     })) as WorkOrder[];
   },
 
+  async createWorkOrder(wo: Omit<WorkOrder, 'id' | 'wo_number' | 'status' | 'produced_quantity'>) {
+    const wo_number = `WO-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const { data, error } = await supabase
+      .from('work_orders')
+      .insert([{ 
+        ...wo, 
+        wo_number, 
+        status: 'planned',
+        produced_quantity: 0
+      }])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data as WorkOrder;
+  },
+
   async updateWOStatus(id: string, status: WorkOrder['status']) {
     const { data, error } = await supabase
       .from('work_orders')

@@ -39,7 +39,26 @@ const item = {
   show: { y: 0, opacity: 1 }
 };
 
+import { useProductionStore } from '../../production/store/useProductionStore';
+import { useInventoryStore } from '../../inventory/store/useInventoryStore';
+import { useMaintenanceStore } from '../../maintenance/store/useMaintenanceStore';
+import * as React from 'react';
+
 export default function DashboardPage() {
+  const { workOrders, fetchWorkOrders, loading: prodLoading } = useProductionStore();
+  const { items, fetchItems } = useInventoryStore();
+  const { logs, fetchLogs } = useMaintenanceStore();
+
+  React.useEffect(() => {
+    fetchWorkOrders();
+    fetchItems();
+    fetchLogs();
+  }, [fetchWorkOrders, fetchItems, fetchLogs]);
+
+  const activeWOs = workOrders.filter(wo => wo.status === 'in_progress' || wo.status === 'planned');
+  const criticalStock = items.filter(i => i.stock <= i.min_stock);
+  const recentWOs = workOrders.slice(0, 4);
+
   return (
     <motion.div 
       variants={container}
@@ -62,21 +81,19 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <motion.div variants={item}>
           <KPICard 
-            title="Daily Production" 
-            value="1,240" 
-            unit="M2" 
-            change={5.2} 
-            icon={Factory} 
-            color="blue"
-            href="/production"
+            title="Total Items" 
+            value={items.length.toString()} 
+            unit="SKUS" 
+            icon={Package} 
+            color="slate"
+            href="/inventory"
           />
         </motion.div>
         <motion.div variants={item}>
           <KPICard 
             title="Active Work Orders" 
-            value="14" 
+            value={activeWOs.length.toString()} 
             unit="ORDERS" 
-            change={-2.1} 
             icon={Activity} 
             color="blue"
             href="/production"
@@ -84,8 +101,8 @@ export default function DashboardPage() {
         </motion.div>
         <motion.div variants={item}>
           <KPICard 
-            title="Material Stock alert" 
-            value="03" 
+            title="Material Stock Alert" 
+            value={criticalStock.length.toString()} 
             unit="CRITICAL" 
             icon={AlertTriangle} 
             color="red"
@@ -94,13 +111,12 @@ export default function DashboardPage() {
         </motion.div>
         <motion.div variants={item}>
           <KPICard 
-            title="Avg. Efficiency" 
-            value="94.2" 
-            unit="%" 
-            change={1.2} 
-            icon={TrendingUp} 
-            color="green"
-            href="/reports"
+            title="Maintenance Logs" 
+            value={logs.length.toString()} 
+            unit="RECORDS" 
+            icon={Clock} 
+            color="zinc"
+            href="/maintenance"
           />
         </motion.div>
       </div>
@@ -126,44 +142,52 @@ export default function DashboardPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody className="divide-y divide-zinc-100">
-                  {[
-                    { id: 'WO-2024-001', item: 'Honeycomb Core (10mm x 1200)', sub: 'Material: Kraft 150g', progress: 85, status: 'Production', color: 'green' },
-                    { id: 'WO-2024-004', item: 'Pallet Core Board (Double Wall)', sub: 'Material: Virgin Liner 220g', progress: 12, status: 'Staging', color: 'blue' },
-                    { id: 'WO-2024-008', item: 'Protective Edge Guard L-Shape', sub: 'Greyboard 450g', progress: 100, status: 'Complete', color: 'zinc' },
-                    { id: 'WO-2024-012', item: 'Custom Die-Cut Box Insert', sub: 'B-Flute Single Wall', progress: 45, status: 'Hold', color: 'red' },
-                  ].map((wo) => (
-                    <TableRow key={wo.id} className="hover:bg-zinc-50 transition-colors border-none group">
-                      <TableCell className="font-mono text-xs text-zinc-500 py-4">{wo.id}</TableCell>
-                      <TableCell className="py-4">
-                        <div className="text-xs font-semibold text-zinc-900">{wo.item}</div>
-                        <div className="text-[10px] text-zinc-400 font-mono">{wo.sub}</div>
-                      </TableCell>
-                      <TableCell className="py-4">
-                        <div className="flex flex-col items-center gap-1.5">
-                          <div className="w-16 h-1 bg-zinc-100 rounded-full overflow-hidden">
-                            <div 
-                              className={cn(
-                                "h-full rounded-full transition-all",
-                                wo.color === 'green' ? "bg-green-500" : wo.color === 'blue' ? "bg-blue-500" : wo.color === 'red' ? "bg-red-500" : "bg-zinc-400"
-                              )} 
-                              style={{ width: `${wo.progress}%` }}
-                            />
-                          </div>
-                          <span className="text-[9px] font-mono text-zinc-400">{wo.progress}%</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right py-4">
-                        <span className={cn(
-                          "px-2 py-0.5 text-[10px] rounded font-bold uppercase",
-                          wo.color === 'green' ? "bg-green-100 text-green-700" : 
-                          wo.color === 'blue' ? "bg-blue-100 text-blue-700" : 
-                          wo.color === 'red' ? "bg-red-100 text-red-700" : "bg-zinc-100 text-zinc-700"
-                        )}>
-                          {wo.status}
-                        </span>
-                      </TableCell>
+                  {prodLoading ? (
+                    <TableRow>
+                       <TableCell colSpan={4} className="h-24 text-center font-mono text-[10px] uppercase italic text-zinc-400">Syncing with production terminal...</TableCell>
                     </TableRow>
-                  ))}
+                  ) : recentWOs.length > 0 ? (
+                    recentWOs.map((wo) => {
+                      const progress = Math.round((wo.produced_quantity / wo.target_quantity) * 100) || 0;
+                      return (
+                        <TableRow key={wo.id} className="hover:bg-zinc-50 transition-colors border-none group">
+                          <TableCell className="font-mono text-xs text-zinc-500 py-4">{wo.wo_number}</TableCell>
+                          <TableCell className="py-4">
+                            <div className="text-xs font-semibold text-zinc-900">{wo.product_name || 'N/A'}</div>
+                            <div className="text-[10px] text-zinc-400 font-mono">ID: {wo.id.substring(0, 8)}</div>
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <div className="flex flex-col items-center gap-1.5">
+                              <div className="w-16 h-1 bg-zinc-100 rounded-full overflow-hidden">
+                                <div 
+                                  className={cn(
+                                    "h-full rounded-full transition-all",
+                                    wo.status === 'completed' ? "bg-green-500" : wo.status === 'in_progress' ? "bg-blue-500" : wo.status === 'cancelled' ? "bg-red-500" : "bg-zinc-400"
+                                  )} 
+                                  style={{ width: `${progress}%` }}
+                                />
+                              </div>
+                              <span className="text-[9px] font-mono text-zinc-400">{progress}%</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right py-4">
+                            <span className={cn(
+                              "px-2 py-0.5 text-[10px] rounded font-bold uppercase",
+                              wo.status === 'completed' ? "bg-green-100 text-green-700" : 
+                              wo.status === 'in_progress' ? "bg-blue-100 text-blue-700" : 
+                              wo.status === 'cancelled' ? "bg-red-100 text-red-700" : "bg-zinc-100 text-zinc-700"
+                            )}>
+                              {wo.status.replace('_', ' ')}
+                            </span>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={4} className="h-24 text-center font-mono text-[10px] uppercase italic text-zinc-400">No recent production cycles</TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </CardContent>
@@ -223,8 +247,8 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <Button asChild className="w-full mt-6 bg-zinc-100 text-zinc-950 hover:bg-white text-[10px] font-bold uppercase tracking-widest h-10" size="sm">
-                <Link to="/maintenance">SYSTEM_DIAGNOSTICS</Link>
+              <Button render={<Link to="/maintenance" />} className="w-full mt-6 bg-zinc-100 text-zinc-950 hover:bg-white text-[10px] font-bold uppercase tracking-widest h-10" size="sm">
+                SYSTEM_DIAGNOSTICS
               </Button>
             </CardContent>
           </Card>

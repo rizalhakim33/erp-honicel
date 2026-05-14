@@ -29,6 +29,18 @@ export const purchasingService = {
     })) as PurchaseOrder[];
   },
 
+  async updatePOStatus(id: string, status: PurchaseOrder['status']) {
+    const { data, error } = await supabase
+      .from('purchase_orders')
+      .update({ status })
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data as PurchaseOrder;
+  },
+
   async createPO(po: Omit<PurchaseOrder, 'id' | 'po_number' | 'status' | 'order_date'>) {
     const po_number = `PO-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
     const { data, error } = await supabase

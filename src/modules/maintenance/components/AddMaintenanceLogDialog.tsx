@@ -28,67 +28,60 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { productionService } from "../services/productionService";
-
-const formSchema = z.object({
-  bom_id: z.string().min(1, "Please select a BOM"),
-  machine_id: z.string().min(1, "Please select a machine"),
-  target_quantity: z.number().min(1, "Quantity must be at least 1"),
-});
-
-interface AddWODialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSuccess?: () => void;
-}
-
-import { useProductionStore } from "../store/useProductionStore";
+import { useMaintenanceStore } from "../store/useMaintenanceStore";
 import { supabase } from "@/lib/supabase";
 
-export function AddWODialog({ open, onOpenChange, onSuccess }: AddWODialogProps) {
+const formSchema = z.object({
+  machine_id: z.string().min(1, "Machine index is required"),
+  type: z.enum(['preventive', 'corrective']),
+  description: z.string().min(5, "Description must be detailed"),
+  status: z.enum(['scheduled', 'in_progress', 'completed']),
+});
+
+interface AddMaintenanceLogDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function AddMaintenanceLogDialog({ open, onOpenChange }: AddMaintenanceLogDialogProps) {
   const [loading, setLoading] = React.useState(false);
-  const [boms, setBoms] = React.useState<{id: string, name: string}[]>([]);
   const [machines, setMachines] = React.useState<{id: string, name: string}[]>([]);
-  const { createWorkOrder, fetchWorkOrders } = useProductionStore();
+  const { createLog, fetchLogs } = useMaintenanceStore();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      bom_id: "",
       machine_id: "",
-      target_quantity: 0,
+      type: "preventive",
+      description: "",
+      status: "scheduled",
     },
   });
 
   React.useEffect(() => {
-    async function loadData() {
-      const [{ data: bomsData }, { data: machinesData }] = await Promise.all([
-        supabase.from('boms').select('id, name'),
-        supabase.from('machines').select('id, name').neq('status', 'breakdown')
-      ]);
-      if (bomsData) setBoms(bomsData);
-      if (machinesData) setMachines(machinesData);
+    async function loadMachines() {
+      const { data } = await supabase.from('machines').select('id, name');
+      if (data) setMachines(data);
     }
-    if (open) {
-      loadData();
-    }
+    if (open) loadMachines();
   }, [open]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
     try {
-      await createWorkOrder({
-        bom_id: values.bom_id,
+      await createLog({
         machine_id: values.machine_id,
-        target_quantity: values.target_quantity,
+        type: values.type,
+        description: values.description,
+        status: values.status,
+        start_time: new Date().toISOString(),
       });
-      toast.success("Work Order initiated successfully");
-      await fetchWorkOrders();
+      toast.success("Maintenance log initialized");
+      await fetchLogs();
       onOpenChange(false);
       form.reset();
-      onSuccess?.();
     } catch (error) {
-      toast.error("Failed to initiate work order");
+      toast.error("Failed to commit maintenance record");
     } finally {
       setLoading(false);
     }
@@ -98,35 +91,13 @@ export function AddWODialog({ open, onOpenChange, onSuccess }: AddWODialogProps)
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] rounded-none border-zinc-200">
         <DialogHeader>
-          <DialogTitle className="text-sm font-bold uppercase tracking-widest font-mono">Initiate_Work_Order</DialogTitle>
-          <DialogDescription className="text-[10px] font-mono uppercase">
-            Start a new production sequence
+          <DialogTitle className="text-sm font-bold uppercase tracking-widest font-mono text-zinc-900">Schedule_Asset_Service</DialogTitle>
+          <DialogDescription className="text-[10px] font-mono uppercase text-zinc-500">
+            Initialize new preventive or corrective maintenance sequence
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
-            <FormField
-              control={form.control}
-              name="bom_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Product / BOM</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="rounded-none border-zinc-200 font-mono text-xs uppercase">
-                        <SelectValue placeholder="Select Drawing" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {boms.map(b => (
-                        <SelectItem key={b.id} value={b.id} className="font-mono text-xs uppercase">{b.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage className="text-[9px] font-mono uppercase" />
-                </FormItem>
-              )}
-            />
             <FormField
               control={form.control}
               name="machine_id"
@@ -136,7 +107,7 @@ export function AddWODialog({ open, onOpenChange, onSuccess }: AddWODialogProps)
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger className="rounded-none border-zinc-200 font-mono text-xs uppercase">
-                        <SelectValue placeholder="Select Allocation" />
+                        <SelectValue placeholder="Select Asset" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -151,18 +122,55 @@ export function AddWODialog({ open, onOpenChange, onSuccess }: AddWODialogProps)
             />
             <FormField
               control={form.control}
-              name="target_quantity"
+              name="type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Target Quantity (Units)</FormLabel>
+                  <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Maintenance Classification</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="rounded-none border-zinc-200 font-mono text-xs uppercase">
+                        <SelectValue placeholder="Select Category" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="preventive" className="font-mono text-xs uppercase">Preventive (Routine)</SelectItem>
+                      <SelectItem value="corrective" className="font-mono text-xs uppercase">Corrective (Repair)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage className="text-[9px] font-mono uppercase" />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Fault_Analysis / Task</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="number" 
-                      className="rounded-none border-zinc-200 font-mono text-xs" 
-                      {...field} 
-                      onChange={e => field.onChange(parseInt(e.target.value))}
-                    />
+                    <Input className="rounded-none border-zinc-200 font-mono text-xs" {...field} placeholder="Describe the maintenance requirements..." />
                   </FormControl>
+                  <FormMessage className="text-[9px] font-mono uppercase" />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Operations_State</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="rounded-none border-zinc-200 font-mono text-xs uppercase">
+                        <SelectValue placeholder="Select State" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="scheduled" className="font-mono text-xs uppercase">Scheduled</SelectItem>
+                      <SelectItem value="in_progress" className="font-mono text-xs uppercase">In_Progress</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage className="text-[9px] font-mono uppercase" />
                 </FormItem>
               )}
@@ -174,14 +182,14 @@ export function AddWODialog({ open, onOpenChange, onSuccess }: AddWODialogProps)
                 onClick={() => onOpenChange(false)}
                 className="rounded-none font-mono text-[10px] uppercase h-9 border-zinc-200"
               >
-                CANCEL_OPS
+                ABORT_OPS
               </Button>
               <Button 
                 type="submit" 
                 disabled={loading}
                 className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 font-mono text-[10px] uppercase h-9 tracking-widest px-6"
               >
-                {loading ? "COMMITTING..." : "INITIATE_PRODUCTION"}
+                {loading ? "COMMITTING..." : "AUTHORIZE_SERVICE"}
               </Button>
             </DialogFooter>
           </form>

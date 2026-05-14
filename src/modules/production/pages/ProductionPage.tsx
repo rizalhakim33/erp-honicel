@@ -8,9 +8,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { AddWODialog } from '../components/AddWODialog';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useProductionStore } from '../store/useProductionStore';
 
 export default function ProductionPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
+  const { workOrders, fetchWorkOrders, loading } = useProductionStore();
+
+  React.useEffect(() => {
+    fetchWorkOrders();
+  }, [fetchWorkOrders]);
 
   return (
     <div className="space-y-6">
@@ -52,57 +58,84 @@ export default function ProductionPage() {
         
         <TabsContent value="work-orders" className="mt-0 outline-none">
           <div className="grid grid-cols-1 gap-6">
-            {[
-              { id: 'WO-101', product: 'HC-20 Honeycomb Panel', progress: 75, machine: 'LINE-01', priority: 'High' },
-              { id: 'WO-105', product: 'CB-A1 Shipping Box', progress: 20, machine: 'SLOTTER-03', priority: 'Normal' },
-              { id: 'WO-110', product: 'EP-L45 Edge Protector', progress: 0, machine: 'FORMER-02', priority: 'Urgent' },
-            ].map((wo) => (
-              <Card key={wo.id} className="border border-zinc-200 rounded-xl shadow-none bg-white overflow-hidden">
-                <CardContent className="p-0 flex flex-col md:flex-row items-center">
-                   <div className="p-6 border-r border-zinc-100 min-w-[200px] bg-zinc-50/50">
-                      <div className="text-[10px] font-mono text-zinc-400 mb-1">REFERENCE_ID</div>
-                      <div className="text-sm font-bold text-zinc-900">{wo.id}</div>
-                      <div className={cn(
-                        "mt-3 text-[9px] font-bold uppercase px-2 py-0.5 rounded-sm inline-block",
-                        wo.priority === 'Urgent' ? "bg-red-100 text-red-700" : wo.priority === 'High' ? "bg-amber-100 text-amber-700" : "bg-zinc-100 text-zinc-600"
-                      )}>
-                        Priority: {wo.priority}
-                      </div>
-                   </div>
-                   <div className="p-6 flex-1 flex flex-col gap-4">
-                      <div className="flex justify-between items-start">
-                         <div>
-                            <div className="text-xs font-bold text-zinc-900 uppercase tracking-tight">{wo.product}</div>
-                            <div className="text-[10px] text-zinc-500 font-mono mt-1">Resource Allocation: {wo.machine}</div>
-                         </div>
-                         <div className="text-right">
-                            <div className="text-xs font-mono font-bold text-zinc-900">{wo.progress}%</div>
-                            <div className="text-[10px] text-zinc-400 font-mono">Realtime Progress</div>
-                         </div>
-                      </div>
-                      <div className="w-full bg-zinc-100 h-1.5 rounded-full overflow-hidden">
-                         <div 
-                           className={cn(
-                             "h-full transition-all duration-1000",
-                             wo.progress === 100 ? "bg-green-500" : wo.progress > 50 ? "bg-blue-500" : wo.progress > 0 ? "bg-amber-500" : "bg-zinc-300"
-                           )} 
-                           style={{ width: `${wo.progress}%` }}
-                         />
-                      </div>
-                   </div>
-                   <div className="p-6 border-l border-zinc-100 flex items-center gap-2">
-                       <Button 
-                         onClick={() => toast.info(`Viewing details for ${wo.id}...`)}
-                         variant="outline" size="sm" className="rounded-none font-mono text-[10px] uppercase"
-                       >Details</Button>
-                       <Button 
-                         onClick={() => toast.success(`Updating state for ${wo.id}...`)}
-                         size="sm" className="bg-zinc-900 text-white rounded-none font-mono text-[10px] uppercase"
-                       >Update_State</Button>
-                   </div>
-                </CardContent>
-              </Card>
-            ))}
+            {loading ? (
+              <div className="p-12 text-center text-zinc-400 font-mono text-[10px] uppercase italic">Syncing with production terminal...</div>
+            ) : workOrders.length > 0 ? (
+              workOrders.map((wo) => {
+                const progress = Math.round((wo.produced_quantity / wo.target_quantity) * 100) || 0;
+                return (
+                  <Card key={wo.id} className="border border-zinc-200 rounded-xl shadow-none bg-white overflow-hidden">
+                    <CardContent className="p-0 flex flex-col md:flex-row items-center">
+                       <div className="p-6 border-r border-zinc-100 min-w-[200px] bg-zinc-50/50">
+                          <div className="text-[10px] font-mono text-zinc-400 mb-1">REFERENCE_ID</div>
+                          <div className="text-sm font-bold text-zinc-900">{wo.wo_number}</div>
+                          <div className={cn(
+                            "mt-3 text-[9px] font-bold uppercase px-2 py-0.5 rounded-sm inline-block",
+                            wo.status === 'in_progress' ? "bg-blue-100 text-blue-700" : wo.status === 'completed' ? "bg-green-100 text-green-700" : "bg-zinc-100 text-zinc-600"
+                          )}>
+                            Status: {wo.status.replace('_', ' ')}
+                          </div>
+                       </div>
+                       <div className="p-6 flex-1 flex flex-col gap-4">
+                          <div className="flex justify-between items-start">
+                             <div>
+                                <div className="text-xs font-bold text-zinc-900 uppercase tracking-tight">{wo.product_name || 'Internal Product'}</div>
+                                <div className="text-[10px] text-zinc-500 font-mono mt-1">Resource Allocation: {wo.machine_name || 'Unassigned'}</div>
+                             </div>
+                             <div className="text-right">
+                                <div className="text-xs font-mono font-bold text-zinc-900">{progress}%</div>
+                                <div className="text-[10px] text-zinc-400 font-mono">Realtime Progress</div>
+                             </div>
+                          </div>
+                          <div className="w-full bg-zinc-100 h-1.5 rounded-full overflow-hidden">
+                             <div 
+                               className={cn(
+                                 "h-full transition-all duration-1000",
+                                 progress === 100 ? "bg-green-500" : progress > 50 ? "bg-blue-500" : progress > 0 ? "bg-amber-500" : "bg-zinc-300"
+                               )} 
+                               style={{ width: `${progress}%` }}
+                             />
+                          </div>
+                       </div>
+                       <div className="p-6 border-l border-zinc-100 flex items-center gap-2">
+                           <Button 
+                             onClick={() => toast.info(`Viewing details for ${wo.wo_number}...`)}
+                             variant="outline" size="sm" className="rounded-none font-mono text-[10px] uppercase"
+                           >Details</Button>
+                           {wo.status !== 'completed' && wo.status !== 'cancelled' && (
+                             <Button 
+                               onClick={async () => {
+                                 const nextStatus = wo.status === 'planned' ? 'in_progress' : 'completed';
+                                 try {
+                                   const { updateWOStatus } = useProductionStore.getState();
+                                   await updateWOStatus(wo.id, nextStatus);
+                                   toast.success(`Work Order ${wo.wo_number} transitioned to ${nextStatus}`);
+                                 } catch (err) {
+                                   toast.error("Failed to update process state");
+                                 }
+                               }}
+                               size="sm" className="bg-zinc-900 text-white rounded-none font-mono text-[10px] uppercase"
+                             >
+                               {wo.status === 'planned' ? 'START_PROD' : 'MARK_DONE'}
+                             </Button>
+                           )}
+                       </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            ) : (
+              <div className="p-12 text-center text-zinc-400 border border-zinc-100 rounded-xl bg-zinc-50/30">
+                <p className="font-mono text-[10px] uppercase italic">No active production streams detected</p>
+                <Button 
+                  onClick={() => setIsAddDialogOpen(true)}
+                  variant="link" 
+                  className="mt-2 text-blue-600 font-mono text-[10px] uppercase"
+                >
+                  [INITIATE_FIRST_WO]
+                </Button>
+              </div>
+            )}
           </div>
         </TabsContent>
 
