@@ -9,6 +9,7 @@ import { AddPODialog } from '@/modules/purchasing/components/AddPODialog';
 import { AddMaintenanceLogDialog } from '@/modules/maintenance/components/AddMaintenanceLogDialog';
 import { AddQCLogDialog } from '@/modules/qc/components/AddQCLogDialog';
 import { AddProductDialog } from '@/modules/production/components/AddProductDialog';
+import { AdjustStockDialog } from '@/modules/inventory/components/AdjustStockDialog';
 
 export function GlobalDialogs() {
   const { openDialogs, close, dialogData } = useDialogStore();
@@ -23,6 +24,11 @@ export function GlobalDialogs() {
       <AddProductDialog 
         open={openDialogs.product} 
         onOpenChange={(open) => !open && close('product')} 
+      />
+      <AdjustStockDialog 
+        open={openDialogs.adjustStock} 
+        onOpenChange={(open) => !open && close('adjustStock')} 
+        item={dialogData.adjustStock}
       />
       <AddBOMDialog 
         open={openDialogs.bom} 

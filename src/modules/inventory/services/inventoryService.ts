@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { InventoryItem } from '../components/ItemTable';
+import { InventoryItem } from '../types';
 
 export const inventoryService = {
   async getItems() {
@@ -11,10 +11,9 @@ export const inventoryService = {
     if (error) throw error;
     return (data || []).map(item => ({
       ...item,
-      // Map schema fields to UI fields
-      category: item.type, // Using 'type' as category for simplicity in UI
-      stock: 0, // Placeholder until joins are implemented
-      status: 'in_stock'
+      category: item.type,
+      stock: item.stock || 0,
+      status: (item.stock || 0) <= (item.min_stock || 0) ? 'low_stock' : 'in_stock'
     })) as InventoryItem[];
   },
 
@@ -33,7 +32,8 @@ export const inventoryService = {
         sku: item.sku,
         unit: item.unit,
         type: itemType,
-        min_stock: item.min_stock
+        min_stock: item.min_stock,
+        stock: item.stock || 0
       }])
       .select()
       .single();
@@ -45,15 +45,30 @@ export const inventoryService = {
     return {
       ...data,
       category: data.type,
-      stock: item.stock || 0, // In reality this would be a separate transaction, but for UI we simulate
-      status: 'in_stock'
+      stock: data.stock || 0,
+      status: (data.stock || 0) <= (data.min_stock || 0) ? 'low_stock' : 'in_stock'
     } as InventoryItem;
   },
 
   async updateStock(id: string, newStock: number, minStock: number) {
-    // In the real schema we'd update 'stocks' table, 
-    // but for the UI to reflect changes we'll mock the return
-    return { id, stock: newStock, min_stock: minStock } as any;
+    const { data, error } = await supabase
+      .from('items')
+      .update({ stock: newStock })
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Supabase Error (updateStock):', error);
+      throw error;
+    }
+
+    return {
+      ...data,
+      category: data.type,
+      stock: data.stock || 0,
+      status: (data.stock || 0) <= (data.min_stock || 0) ? 'low_stock' : 'in_stock'
+    } as InventoryItem;
   },
 
   async deleteItem(id: string) {
@@ -96,8 +111,8 @@ export const inventoryService = {
     return {
       ...data,
       category: data.type,
-      stock: item.stock || 0,
-      status: 'in_stock'
+      stock: data.stock || 0,
+      status: (data.stock || 0) <= (data.min_stock || 0) ? 'low_stock' : 'in_stock'
     } as InventoryItem;
   }
 };

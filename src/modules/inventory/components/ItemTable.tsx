@@ -13,13 +13,14 @@ import {
 } from "@tanstack/react-table"
 import { ArrowUpDown, ChevronDown, MoreHorizontal, Package, Filter, Download } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -36,21 +37,10 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 
-import { AddItemDialog } from "./AddItemDialog"
+import { InventoryItem } from "../types"
 import { useInventoryStore } from "../store/useInventoryStore"
 import { useDialogStore } from "@/store/useDialogStore"
 import { toast } from "sonner"
-
-export type InventoryItem = {
-  id: string
-  name: string
-  sku: string
-  category: string
-  stock: number
-  unit: string
-  min_stock: number
-  status: "in_stock" | "low_stock" | "out_of_stock"
-}
 
 export const columns: ColumnDef<InventoryItem>[] = [
   {
@@ -125,7 +115,7 @@ export const columns: ColumnDef<InventoryItem>[] = [
 ]
 
 export function ItemTable({ filterType, title }: { filterType?: string; title?: string }) {
-  const { open: openDialog } = useDialogStore()
+  const openDialog = useDialogStore(state => state.open)
   const { items, fetchItems, deleteItem } = useInventoryStore()
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -141,29 +131,100 @@ export function ItemTable({ filterType, title }: { filterType?: string; title?: 
     return items.filter(item => item.category === filterType);
   }, [items, filterType]);
 
-  const table = useReactTable({
-    data: filteredItems,
-    columns: [
-      ...columns.filter(c => (c as any).id !== 'actions'),
-      {
-        id: "actions",
-        enableHiding: false,
-        cell: ({ row }) => {
-          return (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0 flex items-center justify-center rounded-md hover:bg-zinc-100 transition-colors cursor-pointer outline-none">
-                  <MoreHorizontal className="h-4 w-4" />
-                  <span className="sr-only">Open menu</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-white border-zinc-200 shadow-xl z-50">
+  const tableColumns = React.useMemo<ColumnDef<InventoryItem>[]>(() => [
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected()}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: "sku",
+      header: () => (
+        <div className="text-[10px] font-mono text-zinc-400 uppercase italic">ID / Serial</div>
+      ),
+      cell: ({ row }) => <div className="font-mono text-xs text-zinc-500">{row.getValue("sku")}</div>,
+    },
+    {
+      accessorKey: "name",
+      header: () => (
+        <div className="text-[10px] font-mono text-zinc-400 uppercase italic">Descriptor</div>
+      ),
+      cell: ({ row }) => (
+        <div>
+          <div className="text-xs font-semibold text-zinc-900">{row.getValue("name")}</div>
+          <div className="text-[10px] text-zinc-400 font-mono tracking-tight uppercase">System: verified</div>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "category",
+      header: "Zone",
+      cell: ({ row }) => <div className="text-[10px] font-mono uppercase text-zinc-500">{row.getValue("category")}</div>,
+    },
+    {
+      accessorKey: "stock",
+      header: () => <div className="text-right text-[10px] font-mono text-zinc-400 uppercase italic">Inventory</div>,
+      cell: ({ row }) => {
+        const amount = parseFloat(row.getValue("stock"))
+        const unit = row.original.unit
+        return <div className="text-right font-mono text-xs font-bold text-zinc-900">{amount} <span className="text-zinc-400 text-[10px] uppercase">{unit}</span></div>
+      },
+    },
+    {
+      accessorKey: "status",
+      header: () => <div className="text-right text-[10px] font-mono text-zinc-400 uppercase italic">Status</div>,
+      cell: ({ row }) => {
+        const status = row.getValue("status") as string
+        return (
+          <div className="text-right">
+            <span className={cn(
+              "px-2 py-0.5 text-[10px] rounded font-bold uppercase",
+              status === 'in_stock' ? "bg-green-100 text-green-700" : status === 'low_stock' ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"
+            )}>
+              {status.replace('_', ' ')}
+            </span>
+          </div>
+        )
+      },
+    },
+    {
+      id: "actions",
+      enableHiding: false,
+      cell: ({ row }) => {
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger className={cn(buttonVariants({ variant: "ghost" }), "h-8 w-8 p-0 flex items-center justify-center rounded-md hover:bg-zinc-100 transition-colors cursor-pointer outline-none border-none shadow-none")}>
+              <MoreHorizontal className="h-4 w-4" />
+              <span className="sr-only">Open menu</span>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-white border-zinc-200 shadow-xl z-50 min-w-[160px]">
+              <DropdownMenuGroup>
                 <DropdownMenuLabel className="font-mono text-[9px] uppercase text-zinc-400 p-2">Actions</DropdownMenuLabel>
                 <DropdownMenuItem 
                   onClick={() => openDialog('item', row.original)} 
                   className="font-mono text-[10px] uppercase cursor-pointer p-2 hover:bg-zinc-100 transition-colors"
                 >
                   Edit Registry
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => openDialog('adjustStock', row.original)} 
+                  className="font-mono text-[10px] uppercase cursor-pointer p-2 hover:bg-zinc-100 transition-colors text-blue-600 focus:text-blue-600"
+                >
+                  Adjust Quantity
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   onClick={() => {
@@ -176,10 +237,12 @@ export function ItemTable({ filterType, title }: { filterType?: string; title?: 
                 >
                   Copy SKU
                 </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-zinc-100" />
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator className="bg-zinc-100 mx-1 my-1" />
+              <DropdownMenuGroup>
                 <DropdownMenuItem 
                   onClick={async () => {
-                    if (confirm("Are you sure you want to delete this asset?")) {
+                    if (window.confirm("Are you sure you want to delete this asset?")) {
                       try {
                         await deleteItem(row.original.id)
                         toast.success("Item removed from registry")
@@ -192,12 +255,17 @@ export function ItemTable({ filterType, title }: { filterType?: string; title?: 
                 >
                   Delete connection
                 </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )
-        },
-      }
-    ],
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )
+      },
+    }
+  ], [openDialog, deleteItem])
+
+  const table = useReactTable({
+    data: filteredItems,
+    columns: tableColumns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),

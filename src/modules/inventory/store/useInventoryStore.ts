@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { InventoryItem } from '../components/ItemTable';
+import { InventoryItem } from '../types';
 import { inventoryService } from '../services/inventoryService';
 
 interface InventoryState {

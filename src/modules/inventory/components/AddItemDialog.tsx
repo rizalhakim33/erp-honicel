@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useInventoryStore } from "../store/useInventoryStore";
 import { toast } from "sonner";
-import { InventoryItem } from "./ItemTable";
+import { InventoryItem } from "../types";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),

@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
+  DropdownMenuGroup,
   DropdownMenuItem, 
   DropdownMenuLabel, 
   DropdownMenuSeparator, 
@@ -48,7 +49,9 @@ export const Topbar = ({ onOpenSidebar }: { onOpenSidebar: () => void }) => {
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>System Administrator</DropdownMenuLabel>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>System Administrator</DropdownMenuLabel>
+            </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem render={<Link to="/settings" className="flex items-center" />}>
               <Settings className="w-4 h-4 mr-2" />
