@@ -18,11 +18,9 @@ import { toast } from 'sonner';
 import { useMaintenanceStore } from '../store/useMaintenanceStore';
 import { useProductionStore } from '../../production/store/useProductionStore';
 import { useDialogStore } from '@/store/useDialogStore';
-import { AddMachineDialog } from '../components/AddMachineDialog';
-import { AddMaintenanceLogDialog } from '../components/AddMaintenanceLogDialog';
 
 export default function MaintenancePage() {
-  const { open: openDialog, openDialogs, close: closeDialog } = useDialogStore();
+  const { open: openDialog } = useDialogStore();
   const { logs, fetchLogs, loading } = useMaintenanceStore();
   const { machines, fetchMachines } = useProductionStore();
 
@@ -33,8 +31,8 @@ export default function MaintenancePage() {
 
   const stats = React.useMemo(() => {
     if (!machines.length) return { mttr: '0h', uptime: '100%' };
-    const operational = machines.filter(m => m.status === 'operational' || m.status === 'running').length;
-    const uptime = Math.round((operational / machines.length) * 100);
+    const nonBroken = machines.filter(m => m.status !== 'breakdown').length;
+    const uptime = Math.round((nonBroken / machines.length) * 100);
     return {
       mttr: '1.2h',
       uptime: `${uptime}%`
@@ -198,15 +196,6 @@ export default function MaintenancePage() {
           </Card>
         </div>
       </div>
-
-      <AddMachineDialog 
-        open={openDialogs.machine} 
-        onOpenChange={(v) => !v && closeDialog('machine')} 
-      />
-      <AddMaintenanceLogDialog
-        open={openDialogs.maintenance}
-        onOpenChange={(v) => !v && closeDialog('maintenance')}
-      />
     </div>
   );
 }

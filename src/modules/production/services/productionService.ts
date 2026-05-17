@@ -65,6 +65,12 @@ export const productionService = {
   },
 
   async deleteWorkOrder(id: string) {
+    // Delete related QC logs first to satisfy foreign key constraints
+    await supabase
+      .from('qc_logs')
+      .delete()
+      .eq('work_order_id', id);
+
     const { error } = await supabase
       .from('work_orders')
       .delete()

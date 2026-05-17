@@ -67,6 +67,12 @@ export default function DashboardPage() {
     return Math.round((running / machines.length) * 100);
   }, [machines]);
 
+  const uptime = React.useMemo(() => {
+    if (!machines.length) return 100;
+    const functioning = machines.filter(m => m.status !== 'breakdown').length;
+    return Math.round((functioning / machines.length) * 100);
+  }, [machines]);
+
   return (
     <motion.div 
       variants={container}
@@ -119,10 +125,10 @@ export default function DashboardPage() {
         </motion.div>
         <motion.div variants={item}>
           <KPICard 
-            title="Maintenance Logs" 
-            value={logs.length.toString()} 
-            unit="RECORDS" 
-            icon={Clock} 
+            title="Maintenance Uptime" 
+            value={`${uptime}%`} 
+            unit="HEALTH" 
+            icon={TrendingUp} 
             color="slate"
             href="/maintenance"
           />
@@ -203,15 +209,17 @@ export default function DashboardPage() {
             <CardContent className="space-y-6 p-6">
               {dashboardMachines.length > 0 ? (
                 dashboardMachines.map((m) => {
-                  const health = m.status === 'operational' || m.status === 'running' ? 100 : m.status === 'maintenance' || m.status === 'idle' ? 45 : 10;
-                  const color = m.status === 'operational' || m.status === 'running' ? 'green' : (m.status === 'maintenance' || m.status === 'idle') ? 'amber' : 'red';
+                  const health = m.status === 'running' ? 100 : m.status === 'idle' ? 90 : m.status === 'maintenance' ? 45 : 10;
+                  const color = m.status === 'running' ? 'green' : m.status === 'idle' ? 'blue' : m.status === 'maintenance' ? 'amber' : 'red';
                   return (
                     <div key={m.id} className="flex flex-col gap-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className={cn(
                             "w-2 h-2 rounded-full",
-                            color === 'green' ? "bg-green-500 animate-pulse" : color === 'amber' ? "bg-amber-500" : "bg-red-500"
+                            color === 'green' ? "bg-green-500 animate-pulse" : 
+                            color === 'blue' ? "bg-blue-500" :
+                            color === 'amber' ? "bg-amber-500" : "bg-red-500"
                           )}></div>
                           <span className="text-xs font-mono tracking-tight text-zinc-900 font-bold">{m.name}</span>
                         </div>

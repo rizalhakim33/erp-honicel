@@ -3,9 +3,6 @@ import { useState } from 'react';
 import { Package, Search, Plus, Filter, Download, AlertTriangle, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ItemTable } from '../components/ItemTable';
-import { AddItemDialog } from '../components/AddItemDialog';
-import { AdjustStockDialog } from '../components/AdjustStockDialog';
-import { AddProductDialog } from '../../production/components/AddProductDialog';
 import { KPICard } from '@/components/ui/kpi-card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from 'sonner';
@@ -15,7 +12,7 @@ import * as React from 'react';
 import { useDialogStore } from '@/store/useDialogStore';
 
 export default function InventoryPage() {
-  const { open: openDialog, openDialogs, dialogData, close: closeDialog } = useDialogStore();
+  const { open: openDialog } = useDialogStore();
   const { items, fetchItems, loading } = useInventoryStore();
 
   React.useEffect(() => {
@@ -78,21 +75,6 @@ export default function InventoryPage() {
           <ItemTable filterType="finished_good" title="Export_Ready" />
         </TabsContent>
       </Tabs>
-
-      <AddItemDialog 
-        open={openDialogs.item} 
-        onOpenChange={(v) => !v && closeDialog('item')} 
-        item={dialogData.item}
-      />
-      <AddProductDialog
-        open={openDialogs.product}
-        onOpenChange={(v) => !v && closeDialog('product')}
-      />
-      <AdjustStockDialog
-        open={openDialogs.adjustStock}
-        onOpenChange={(v) => !v && closeDialog('adjustStock')}
-        item={dialogData.adjustStock}
-      />
     </div>
   );
 }

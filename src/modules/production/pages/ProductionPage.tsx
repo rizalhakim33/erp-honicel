@@ -8,9 +8,6 @@ import { ImportButton } from '@/components/ui/ImportButton';
 import { exportToCSV } from '@/lib/csv';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { AddWODialog } from '../components/AddWODialog';
-import { AddBOMDialog } from '../components/AddBOMDialog';
-import { WODetailsDialog } from '../components/WODetailsDialog';
 import { useProductionStore } from '../store/useProductionStore';
 import { useDialogStore } from '@/store/useDialogStore';
 
@@ -374,20 +371,6 @@ export default function ProductionPage() {
           </div>
         </TabsContent>
       </Tabs>
-
-      <AddBOMDialog 
-        open={openDialogs.bom} 
-        onOpenChange={(v) => !v && closeDialog('bom')} 
-      />
-      <AddWODialog 
-        open={openDialogs.wo} 
-        onOpenChange={(v) => !v && closeDialog('wo')} 
-      />
-      <WODetailsDialog
-        open={openDialogs.wo_details}
-        onOpenChange={(v) => !v && closeDialog('wo_details')}
-        workOrder={dialogData.wo_details}
-      />
     </div>
   );
 }

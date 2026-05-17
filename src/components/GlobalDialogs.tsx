@@ -10,6 +10,7 @@ import { AddMaintenanceLogDialog } from '@/modules/maintenance/components/AddMai
 import { AddQCLogDialog } from '@/modules/qc/components/AddQCLogDialog';
 import { AddProductDialog } from '@/modules/production/components/AddProductDialog';
 import { AdjustStockDialog } from '@/modules/inventory/components/AdjustStockDialog';
+import { WODetailsDialog } from '@/modules/production/components/WODetailsDialog';
 
 export function GlobalDialogs() {
   const { openDialogs, close, dialogData } = useDialogStore();
@@ -57,6 +58,11 @@ export function GlobalDialogs() {
       <AddQCLogDialog 
         open={openDialogs.qc} 
         onOpenChange={(open) => !open && close('qc')} 
+      />
+      <WODetailsDialog
+        open={openDialogs.wo_details}
+        onOpenChange={(open) => !open && close('wo_details')}
+        workOrder={dialogData.wo_details}
       />
     </>
   );
