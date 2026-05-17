@@ -47,20 +47,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleDemoLogin = async (role: string) => {
-    toast.info(`Initiating bypass for ${role} profile...`);
-    
-    // Simulate login for preview purposes
-    setLoading(true);
-    setTimeout(() => {
-      useAuthStore.getState().setRole(role);
-      useAuthStore.getState().setUser({ email: `${role}@honicel.id`, id: 'demo-uid' } as any);
-      useAuthStore.getState().setLoading(false);
-      toast.success(`Access Granted as ${role.toUpperCase()}`);
-      navigate('/');
-    }, 800);
-  };
-
   return (
     <div className="min-h-screen bg-[#09090b] flex items-center justify-center p-4 selection:bg-blue-500/30">
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
@@ -131,28 +117,19 @@ export default function LoginPage() {
             <div className="absolute inset-0 flex items-center px-6">
               <span className="w-full border-t border-zinc-900" />
             </div>
-            <div className="relative flex justify-center text-[9px] uppercase font-mono tracking-widest">
-              <span className="bg-zinc-950 px-2 text-zinc-500">Diagnostic Role Access</span>
+            <div className="relative flex justify-center text-[9px] uppercase font-mono tracking-widest text-zinc-500">
+              <span className="bg-zinc-950 px-2 italic font-bold">Registration Entrypoint</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              { label: 'ADMIN', role: 'admin' },
-              { label: 'PROD_LEAD', role: 'production' },
-              { label: 'QC_DIRECTOR', role: 'qc' },
-              { label: 'INV_MANAGER', role: 'inventory' }
-            ].map((demo) => (
-              <Button 
-                key={demo.role}
-                variant="outline" 
-                size="sm" 
-                onClick={() => handleDemoLogin(demo.role)}
-                className="rounded-none border-zinc-900 bg-transparent text-zinc-500 hover:text-white hover:border-zinc-700 text-[9px] font-mono tracking-tighter transition-colors h-8"
-              >
-                ACCESS_{demo.label}
-              </Button>
-            ))}
+          <div className="text-center">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/register')}
+              className="w-full border-zinc-900 bg-transparent text-zinc-500 hover:text-white hover:border-zinc-700 text-[10px] uppercase font-bold tracking-widest rounded-none h-11"
+            >
+              CREATE_SYSTEM_ACCOUNT
+            </Button>
           </div>
 
           <div className="flex items-center justify-center gap-4 pt-4 text-[9px] text-zinc-600 font-mono tracking-widest">

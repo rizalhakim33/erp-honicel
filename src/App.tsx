@@ -2,6 +2,8 @@ import * as React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { DashboardLayout } from './modules/layout/DashboardLayout';
 import LoginPage from './modules/auth/pages/LoginPage';
+import RegisterPage from './modules/auth/pages/RegisterPage';
+import PendingApprovalPage from './modules/auth/pages/PendingApprovalPage';
 import DashboardPage from './modules/dashboard/pages/DashboardPage';
 import InventoryPage from './modules/inventory/pages/InventoryPage';
 import PurchasingPage from './modules/purchasing/pages/PurchasingPage';
@@ -16,7 +18,7 @@ import { useAuthStore } from './modules/auth/store/useAuthStore';
 import { useAuth } from './modules/auth/hooks/useAuth';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, isLoading } = useAuthStore();
+  const { user, isApproved, isLoading } = useAuthStore();
   
   if (isLoading) {
     return (
@@ -29,6 +31,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (!user) {
     return <Navigate to="/login" replace />;
   }
+
+  if (!isApproved) {
+    return <Navigate to="/pending" replace />;
+  }
   
   return <>{children}</>;
 }
@@ -40,6 +46,8 @@ export default function App() {
     <Router>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/pending" element={<PendingApprovalPage />} />
         
         <Route element={
           <ProtectedRoute>
