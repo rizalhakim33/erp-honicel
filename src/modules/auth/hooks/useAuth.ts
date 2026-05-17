@@ -23,24 +23,25 @@ export const useAuth = () => {
           setUser(session.user);
           
           const email = session.user.email?.toLowerCase();
-          
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*, roles(name)')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (profile) {
-            setProfile(profile);
-            setRole(profile.roles?.name || 'viewer');
-            setApproved(profile.is_active || false);
-          } else if (email === 'rizal.h33@gmail.com') {
-            // Super Admin Fallback if no profile record yet
+          // Super Admin Bypass
+          if (email === 'rizal.h33@gmail.com') {
             setRole('super_admin');
             setApproved(true);
             setProfile({ email: session.user.email, full_name: 'Super Admin' });
           } else {
-            setApproved(false);
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*, roles(name)')
+              .eq('id', session.user.id)
+              .single();
+            
+            if (profile) {
+              setProfile(profile);
+              setRole(profile.roles?.name || 'viewer');
+              setApproved(profile.is_active || false);
+            } else {
+              setApproved(false);
+            }
           }
         } else {
           setUser(null);
@@ -67,22 +68,24 @@ export const useAuth = () => {
         setUser(session.user);
         const email = session.user.email?.toLowerCase();
         
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*, roles(name)')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (profile) {
-          setProfile(profile);
-          setRole(profile.roles?.name || 'viewer');
-          setApproved(profile.is_active || false);
-        } else if (email === 'rizal.h33@gmail.com') {
+        if (email === 'rizal.h33@gmail.com') {
           setRole('super_admin');
           setApproved(true);
           setProfile({ email: session.user.email, full_name: 'Super Admin' });
         } else {
-          setApproved(false);
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*, roles(name)')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (profile) {
+            setProfile(profile);
+            setRole(profile.roles?.name || 'viewer');
+            setApproved(profile.is_active || false);
+          } else {
+            setApproved(false);
+          }
         }
       } else {
         setUser(null);

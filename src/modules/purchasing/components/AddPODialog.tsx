@@ -111,7 +111,7 @@ export function AddPODialog({ open, onOpenChange, onSuccess }: AddPODialogProps)
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Vendor / Supplier</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger className="rounded-none border-zinc-200 font-mono text-xs uppercase">
                         <SelectValue placeholder="Select Vendor" />

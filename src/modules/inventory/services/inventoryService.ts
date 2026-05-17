@@ -5,21 +5,24 @@ export const inventoryService = {
   async getItems() {
     const { data: itemsData, error: itemsError } = await supabase
       .from('items')
-      .select('*')
+      .select('*, stocks(quantity)')
       .order('name');
     
     if (itemsError) throw itemsError;
 
     return (itemsData || []).map(item => {
-      // In this simplified version, we might not have the stocks joined
-      // We assume stock is 0 if not provided or handle it differently
-      const stockQty = item.stock || 0; 
-      const minStock = item.min_stock || 10;
+      const stockQty = item.stocks?.reduce((acc: number, s: any) => acc + (s.quantity || 0), 0) || 0;
+      const minStock = item.min_stock || 0;
+      
+      let status: 'in_stock' | 'low_stock' | 'out_of_stock' = 'in_stock';
+      if (stockQty <= 0) status = 'out_of_stock';
+      else if (stockQty <= minStock) status = 'low_stock';
+
       return {
         ...item,
         category: item.type,
         stock: stockQty,
-        status: stockQty <= minStock ? (stockQty === 0 ? 'out_of_stock' : 'low_stock') : 'in_stock'
+        status: status
       };
     }) as InventoryItem[];
   },
@@ -87,11 +90,17 @@ export const inventoryService = {
       // We don't throw here to avoid failing item creation, but user will see 0 stock
     }
 
+    const stock = item.stock || 0;
+    const minStock = item.min_stock || 0;
+    let status: 'in_stock' | 'low_stock' | 'out_of_stock' = 'in_stock';
+    if (stock <= 0) status = 'out_of_stock';
+    else if (stock <= minStock) status = 'low_stock';
+
     return {
       ...newItem,
       category: newItem.type,
-      stock: item.stock || 0,
-      status: (item.stock || 0) <= (item.min_stock || 10) ? 'low_stock' : 'in_stock'
+      stock: stock,
+      status: status
     } as InventoryItem;
   },
 
@@ -123,11 +132,15 @@ export const inventoryService = {
 
     if (itemError) throw itemError;
 
+    let status: 'in_stock' | 'low_stock' | 'out_of_stock' = 'in_stock';
+    if (newStock <= 0) status = 'out_of_stock';
+    else if (newStock <= (minStock || 0)) status = 'low_stock';
+
     return {
       ...itemData,
       category: itemData.type,
       stock: newStock,
-      status: newStock <= (minStock || 10) ? 'low_stock' : 'in_stock'
+      status: status
     } as InventoryItem;
   },
 
@@ -169,13 +182,17 @@ export const inventoryService = {
     }
 
     const stockQty = data.stocks?.reduce((acc: number, s: any) => acc + (s.quantity || 0), 0) || 0;
-    const minStock = data.min_stock || 10;
+    const minStock = data.min_stock || 0;
+    
+    let status: 'in_stock' | 'low_stock' | 'out_of_stock' = 'in_stock';
+    if (stockQty <= 0) status = 'out_of_stock';
+    else if (stockQty <= minStock) status = 'low_stock';
 
     return {
       ...data,
       category: data.type,
       stock: stockQty,
-      status: stockQty <= minStock ? 'low_stock' : 'in_stock'
+      status: status
     } as InventoryItem;
   }
 };

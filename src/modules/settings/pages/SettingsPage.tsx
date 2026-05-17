@@ -25,7 +25,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export default function SettingsPage() {
   const { user, profile, role } = useAuthStore();
   const [dbStatus, setDbStatus] = React.useState<'checking' | 'connected' | 'error' | 'unconfigured'>('checking');
-  const [dbError, setDbError] = React.useState<string | null>(null);
   const [activeTab, setActiveTab] = React.useState('Profile');
   const [pendingUsers, setPendingUsers] = React.useState<any[]>([]);
   const [rolesList, setRolesList] = React.useState<any[]>([]);
@@ -37,18 +36,10 @@ export default function SettingsPage() {
         setDbStatus('unconfigured');
         return;
       }
-      
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Connection timeout')), 10000)
-      );
-
       try {
-        const fetchPromise = supabase.from('profiles').select('count', { count: 'exact', head: true });
-        const { error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
-        
+        const { error } = await supabase.from('profiles').select('count', { count: 'exact', head: true });
         if (error) throw error;
         setDbStatus('connected');
-        setDbError(null);
         
         if (isSuperAdmin) {
             const { data: pending } = await supabase.from('profiles').select('*').eq('is_active', false);
@@ -69,10 +60,9 @@ export default function SettingsPage() {
                 }
             }
         }
-      } catch (e: any) {
+      } catch (e) {
         console.error('Connection check failed:', e);
         setDbStatus('error');
-        setDbError(e.message || 'Unknown network error');
       }
     }
     checkConn();
@@ -111,8 +101,6 @@ export default function SettingsPage() {
         .eq('id', user.id);
       
       if (error) throw error;
-      
-      useAuthStore.getState().setProfile({ ...profile, full_name: fullName });
       toast.success("Profile updated successfully");
       // Optional: Refresh session/profile
     } catch (e) {
@@ -155,7 +143,7 @@ export default function SettingsPage() {
             </button>
           ))}
           
-          <div className="mt-6 p-4 border border-dashed border-zinc-200 rounded-none">
+          <div className="mt-6 p-4 border border-dashed border-zinc-200 rounded-lg">
              <div className="text-[9px] font-mono uppercase text-zinc-400 mb-2">Supabase_Link</div>
              <div className="flex items-center gap-2">
                 <div className={`w-2 h-2 rounded-full ${
@@ -166,20 +154,15 @@ export default function SettingsPage() {
                 <span className="text-[10px] font-mono uppercase font-bold text-zinc-700">
                   {dbStatus === 'connected' ? 'Online' : 
                    dbStatus === 'checking' ? 'Checking...' :
-                   dbStatus === 'unconfigured' ? 'Not Configured' : 'Offline'}
+                   dbStatus === 'unconfigured' ? 'Not Configured' : 'Offline / RLS Blocked'}
                 </span>
              </div>
-             {dbStatus === 'error' && dbError && (
-               <div className="mt-2 text-[9px] font-mono text-red-400 uppercase leading-tight">
-                 Error: {dbError.substring(0, 50)}{dbError.length > 50 ? '...' : ''}
-               </div>
-             )}
           </div>
         </div>
 
         <div className="md:col-span-3 space-y-6">
           {activeTab === 'Profile' && (
-            <Card className="border border-zinc-200 rounded-none shadow-none bg-white">
+            <Card className="border border-zinc-200 rounded-xl shadow-none bg-white">
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg font-bold">User Identity</CardTitle>
                 <CardDescription className="text-xs font-mono uppercase tracking-tight">Modify your system credentials and public alias</CardDescription>
@@ -220,7 +203,7 @@ export default function SettingsPage() {
           )}
 
           {activeTab === 'User Admin' && isSuperAdmin && (
-            <Card className="border border-zinc-200 rounded-none shadow-none bg-white">
+            <Card className="border border-zinc-200 rounded-xl shadow-none bg-white">
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg font-bold">Pending Approvals</CardTitle>
                 <CardDescription className="text-xs font-mono uppercase tracking-tight">Authorize new nodes seeking system access</CardDescription>
@@ -280,7 +263,7 @@ export default function SettingsPage() {
             </Card>
           )}
 
-          <Card className="border border-zinc-200 rounded-none shadow-none bg-zinc-50">
+          <Card className="border border-zinc-200 rounded-xl shadow-none bg-zinc-50">
              <CardHeader className="pb-2">
                 <div className="flex items-center gap-2">
                   <Terminal className="w-4 h-4 text-zinc-500" />

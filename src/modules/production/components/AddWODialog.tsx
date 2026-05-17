@@ -114,7 +114,7 @@ export function AddWODialog({ open, onOpenChange, onSuccess }: AddWODialogProps)
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Product / BOM</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger className="rounded-none border-zinc-200 font-mono text-xs uppercase">
                         <SelectValue placeholder="Select Drawing" />
@@ -145,7 +145,7 @@ export function AddWODialog({ open, onOpenChange, onSuccess }: AddWODialogProps)
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Resource / Machine</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger className="rounded-none border-zinc-200 font-mono text-xs uppercase">
                         <SelectValue placeholder="Select Allocation" />

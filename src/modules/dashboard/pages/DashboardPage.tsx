@@ -42,23 +42,12 @@ const item = {
 import { useProductionStore } from '../../production/store/useProductionStore';
 import { useInventoryStore } from '../../inventory/store/useInventoryStore';
 import { useMaintenanceStore } from '../../maintenance/store/useMaintenanceStore';
-import { useDialogStore } from '@/store/useDialogStore';
 import * as React from 'react';
 
 export default function DashboardPage() {
-  const { 
-    workOrders, 
-    machines, 
-    fetchWorkOrders, 
-    fetchMachines, 
-    loading: prodLoading,
-    error: prodError
-  } = useProductionStore();
-
-  const { items, fetchItems, error: invError } = useInventoryStore();
-  const { logs, fetchLogs, error: maintError } = useMaintenanceStore();
-
-  const openDialog = useDialogStore(state => state.open);
+  const { workOrders, machines, fetchWorkOrders, fetchMachines, loading: prodLoading } = useProductionStore();
+  const { items, fetchItems } = useInventoryStore();
+  const { logs, fetchLogs } = useMaintenanceStore();
 
   React.useEffect(() => {
     fetchWorkOrders();
@@ -67,10 +56,8 @@ export default function DashboardPage() {
     fetchLogs();
   }, [fetchWorkOrders, fetchMachines, fetchItems, fetchLogs]);
 
-  const error = prodError || invError || maintError;
-
   const activeWOs = workOrders.filter(wo => wo.status === 'in_progress' || wo.status === 'planned');
-  const criticalStock = items.filter(i => i.status === 'low_stock' || i.status === 'out_of_stock');
+  const criticalStock = items.filter(i => i.stock <= (i.min_stock || 0));
   const dashboardActiveWOs = activeWOs.slice(0, 4);
   const dashboardMachines = machines.slice(0, 4);
 
@@ -103,8 +90,6 @@ export default function DashboardPage() {
           </span>
         </div>
       </div>
-
-      {error && <ErrorDisplay message={error} />}
 
       {/* KPI Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -153,7 +138,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Recent Work Orders */}
         <motion.div variants={item} className="lg:col-span-8">
-          <Card className="border border-zinc-200 rounded-none shadow-none bg-white overflow-hidden flex flex-col h-full">
+          <Card className="border border-zinc-200 rounded-xl shadow-none bg-white overflow-hidden flex flex-col h-full">
             <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-zinc-100 bg-zinc-50/50">
               <CardTitle className="text-xs font-bold uppercase tracking-wider text-zinc-700">Active Production Line</CardTitle>
               <Button asChild variant="ghost" size="sm" className="text-zinc-600 hover:text-zinc-900 font-mono text-[10px] uppercase tracking-tight">
@@ -178,21 +163,17 @@ export default function DashboardPage() {
                   ) : dashboardActiveWOs.length > 0 ? (
                     dashboardActiveWOs.map((wo) => {
                       return (
-                        <TableRow 
-                          key={wo.id} 
-                          className="hover:bg-zinc-50 transition-colors border-none group cursor-pointer"
-                          onClick={() => openDialog('wo_details', wo)}
-                        >
+                        <TableRow key={wo.id} className="hover:bg-zinc-50 transition-colors border-none group">
                           <TableCell className="font-mono text-xs text-zinc-500 py-4">{wo.wo_number}</TableCell>
                           <TableCell className="py-4">
                             <div className="text-xs font-semibold text-zinc-900">{wo.product_name || 'N/A'}</div>
                           </TableCell>
                           <TableCell className="py-4">
                             <span className={cn(
-                               "px-2 py-0.5 text-[10px] rounded font-bold uppercase",
-                               wo.status === 'completed' ? "bg-green-100 text-green-700" : 
-                               wo.status === 'in_progress' ? "bg-blue-100 text-blue-700" : 
-                               wo.status === 'cancelled' ? "bg-red-100 text-red-700" : "bg-zinc-100 text-zinc-700"
+                              "px-2 py-0.5 text-[10px] rounded font-bold uppercase",
+                              wo.status === 'completed' ? "bg-green-100 text-green-700" : 
+                              wo.status === 'in_progress' ? "bg-blue-100 text-blue-700" : 
+                              wo.status === 'cancelled' ? "bg-red-100 text-red-700" : "bg-zinc-100 text-zinc-700"
                             )}>
                               {wo.status.replace('_', ' ')}
                             </span>
@@ -221,7 +202,7 @@ export default function DashboardPage() {
 
         {/* Asset Health Monitoring */}
         <motion.div variants={item} className="lg:col-span-4">
-          <Card className="border border-zinc-200 rounded-none shadow-none bg-white h-full flex flex-col">
+          <Card className="border border-zinc-200 rounded-xl shadow-none bg-white h-full flex flex-col">
             <CardHeader className="pb-4 border-b border-zinc-50 bg-zinc-50/30">
               <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 font-mono">Asset Health Monitoring</CardTitle>
             </CardHeader>
@@ -281,17 +262,5 @@ export default function DashboardPage() {
         </motion.div>
       </div>
     </motion.div>
-  );
-}
-
-function ErrorDisplay({ message }: { message: string }) {
-  return (
-    <div className="p-4 bg-red-50 border border-red-200 rounded-none mb-6">
-      <div className="flex items-center gap-2 text-red-600 font-mono text-[10px] uppercase font-bold">
-        <AlertTriangle className="w-3.5 h-3.5" />
-        System_Failure: Data_Fetch_Aborted
-      </div>
-      <p className="text-[10px] text-red-500 font-mono mt-1 uppercase">{message}</p>
-    </div>
   );
 }

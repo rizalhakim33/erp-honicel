@@ -106,7 +106,7 @@ export function AddQCLogDialog({ open, onOpenChange }: AddQCLogDialogProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Work Order Ref</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger className="rounded-none border-zinc-200 font-mono text-xs uppercase">
                         <SelectValue placeholder="Select Batch" />
@@ -137,7 +137,7 @@ export function AddQCLogDialog({ open, onOpenChange }: AddQCLogDialogProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Inspection Protocol</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger className="rounded-none border-zinc-200 font-mono text-xs uppercase">
                         <SelectValue placeholder="Select Protocol" />
@@ -160,7 +160,7 @@ export function AddQCLogDialog({ open, onOpenChange }: AddQCLogDialogProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Final Verdict</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger className="rounded-none border-zinc-200 font-mono text-xs uppercase">
                         <SelectValue placeholder="Status" />

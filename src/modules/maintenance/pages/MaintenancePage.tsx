@@ -129,7 +129,7 @@ export default function MaintenancePage() {
             </div>
 
             <TabsContent value="tickets" className="m-0">
-              <Card className="border border-zinc-200 rounded-none shadow-none bg-white">
+              <Card className="border border-zinc-200 rounded-xl shadow-none bg-white">
                 <CardContent className="p-0">
                   <div className="divide-y divide-zinc-100">
                     {logsLoading ? (
@@ -139,7 +139,7 @@ export default function MaintenancePage() {
                         <div key={log.id} className="p-4 flex items-center justify-between hover:bg-zinc-50 transition-colors">
                           <div className="flex items-start gap-4">
                             <div className={cn(
-                              "mt-1 w-2 h-2 rounded-none",
+                              "mt-1 w-2 h-2 rounded-full",
                               log.type === 'corrective' ? "bg-red-500 animate-pulse" : "bg-blue-500"
                             )}></div>
                             <div>
@@ -208,7 +208,7 @@ export default function MaintenancePage() {
             </TabsContent>
 
             <TabsContent value="assets" className="m-0">
-              <Card className="border border-zinc-200 rounded-none shadow-none bg-white">
+              <Card className="border border-zinc-200 rounded-xl shadow-none bg-white">
                 <CardContent className="p-0">
                   <TableUI>
                     <TableHeader className="bg-zinc-50/50">
@@ -285,7 +285,7 @@ export default function MaintenancePage() {
         </div>
 
         <div className="space-y-6">
-          <Card className="border border-zinc-200 rounded-none shadow-none bg-white">
+          <Card className="border border-zinc-200 rounded-xl shadow-none bg-white">
             <CardHeader className="pb-2">
               <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Maintenance Stats</CardTitle>
             </CardHeader>

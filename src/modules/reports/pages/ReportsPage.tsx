@@ -113,7 +113,7 @@ export default function ReportsPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="border border-zinc-200 rounded-none shadow-none bg-white">
+        <Card className="border border-zinc-200 rounded-xl shadow-none bg-white">
           <CardHeader className="border-b border-zinc-50 p-4">
             <div className="flex items-center justify-between">
               <CardTitle className="text-xs font-bold uppercase tracking-widest text-zinc-500">Weekly Production Yield Output</CardTitle>
@@ -158,7 +158,7 @@ export default function ReportsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border border-zinc-200 rounded-none shadow-none bg-white">
+        <Card className="border border-zinc-200 rounded-xl shadow-none bg-white">
           <CardHeader className="border-b border-zinc-50 p-4">
              <div className="flex items-center justify-between">
               <CardTitle className="text-xs font-bold uppercase tracking-widest text-zinc-500">Asset Flow & Inventory Registry</CardTitle>
@@ -199,7 +199,7 @@ export default function ReportsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
          {summaryStats.map((stat) => (
-           <Card key={stat.label} className="border border-zinc-200 rounded-none shadow-none bg-zinc-50/50">
+           <Card key={stat.label} className="border border-zinc-200 rounded-xl shadow-none bg-zinc-50/50">
              <CardContent className="p-4">
                 <div className="text-[9px] font-mono text-zinc-400 uppercase tracking-widest mb-1">{stat.label}</div>
                 <div className="flex items-baseline justify-between">

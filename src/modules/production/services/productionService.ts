@@ -17,19 +17,21 @@ export const productionService = {
   async getWorkOrders() {
     const { data, error } = await supabase
       .from('work_orders')
-      .select('*')
+      .select(`
+        *,
+        boms (name),
+        machines (name)
+      `)
       .order('created_at', { ascending: false });
     
     if (error) {
       console.error('Supabase Error (getWorkOrders):', error);
       throw error;
     }
-    
-    // Attempt to get name info separately or use fallback
     return (data || []).map(wo => ({
       ...wo,
-      product_name: wo.product_name || 'Production Batch',
-      machine_name: wo.machine_name || 'Generic Resource'
+      product_name: wo.boms?.name,
+      machine_name: wo.machines?.name
     })) as WorkOrder[];
   },
 
@@ -62,10 +64,10 @@ export const productionService = {
     return data as WorkOrder;
   },
 
-  async updateWOQuantity(id: string, quantity: number) {
+  async updateWOQuantity(id: string, produced_quantity: number) {
     const { data, error } = await supabase
       .from('work_orders')
-      .update({ produced_quantity: quantity })
+      .update({ produced_quantity })
       .eq('id', id)
       .select()
       .single();

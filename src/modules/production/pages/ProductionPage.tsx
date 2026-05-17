@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Plus, ListTree, Activity, Filter, Download, Trash2, Upload } from 'lucide-react';
+import { Plus, Minus, ListTree, Activity, Filter, Download, Trash2, Upload } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ImportButton } from '@/components/ui/ImportButton';
 import { exportToCSV } from '@/lib/csv';
@@ -22,6 +23,7 @@ export default function ProductionPage() {
     fetchMachines, 
     createWorkOrder, 
     updateWOStatus,
+    updateWOQuantity,
     deleteWorkOrder,
     loading 
   } = useProductionStore();
@@ -128,74 +130,84 @@ export default function ProductionPage() {
               workOrders.map((wo) => {
                 const progress = Math.round((wo.produced_quantity / wo.target_quantity) * 100) || 0;
                 return (
-                  <Card key={wo.id} className="border border-zinc-200 rounded-none shadow-none bg-white overflow-hidden">
+                  <Card key={wo.id} className="border border-zinc-200 rounded-xl shadow-none bg-white overflow-hidden">
                     <CardContent className="p-0 flex flex-col md:flex-row items-center">
                        <div className="p-6 border-r border-zinc-100 min-w-[200px] bg-zinc-50/50">
                           <div className="text-[10px] font-mono text-zinc-400 mb-1">REFERENCE_ID</div>
                           <div className="text-sm font-bold text-zinc-900">{wo.wo_number}</div>
                           <div className={cn(
-                            "mt-3 text-[9px] font-bold uppercase px-2 py-0.5 rounded-none inline-block",
+                            "mt-3 text-[9px] font-bold uppercase px-2 py-0.5 rounded-sm inline-block",
                             wo.status === 'in_progress' ? "bg-blue-100 text-blue-700" : wo.status === 'completed' ? "bg-green-100 text-green-700" : "bg-zinc-100 text-zinc-600"
                           )}>
                             Status: {wo.status.replace('_', ' ')}
                           </div>
                        </div>
                        <div className="p-6 flex-1 flex flex-col gap-4">
-                          <div className="flex justify-between items-center">
-                             <div>
+                          <div className="flex flex-col gap-4">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                              <div>
                                 <div className="text-xs font-bold text-zinc-900 uppercase tracking-tight">{wo.product_name || 'Internal Product'}</div>
-                                <div className="text-[10px] text-zinc-500 font-mono mt-1">Resource Allocation: {wo.machine_name || 'Unassigned'}</div>
-                             </div>
-                             <div className="text-right">
-                                <div className="text-sm font-mono font-bold text-zinc-900">
-                                  {wo.produced_quantity} / {wo.target_quantity} UN_OPS
+                                <div className="text-[10px] text-zinc-500 font-mono mt-1 uppercase tracking-tight">Resource Allocation: {wo.machine_name || 'Unassigned'}</div>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-1 bg-zinc-50 p-1 rounded-none border border-zinc-200">
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-7 w-7 rounded-none hover:bg-white text-zinc-600 border border-transparent hover:border-zinc-200 transition-all"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      updateWOQuantity(wo.id, Math.max(0, wo.produced_quantity - 1));
+                                    }}
+                                  >
+                                    <Minus className="w-3 h-3" />
+                                  </Button>
+                                  <Input 
+                                    type="number" 
+                                    className="h-7 w-16 text-[10px] font-mono text-center p-0 border-none bg-transparent focus-visible:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                    value={wo.produced_quantity}
+                                    onClick={(e) => e.stopPropagation()}
+                                    onChange={(e) => updateWOQuantity(wo.id, parseInt(e.target.value) || 0)}
+                                  />
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-7 w-7 rounded-none hover:bg-white text-zinc-600 border border-transparent hover:border-zinc-200 transition-all"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      updateWOQuantity(wo.id, wo.produced_quantity + 1);
+                                    }}
+                                  >
+                                    <Plus className="w-3 h-3" />
+                                  </Button>
                                 </div>
-                                <div className="text-[9px] text-zinc-400 font-mono uppercase tracking-widest">Yield_Matrix</div>
-                             </div>
-                          </div>
-                          {wo.status === 'in_progress' && (
-                            <div className="flex items-center gap-2 mt-4 pt-4 border-t border-zinc-50">
-                              <Button 
-                                size="sm" 
-                                variant="outline" 
-                                className="h-8 text-[9px] font-bold uppercase rounded-none border-zinc-200 text-zinc-600"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  useProductionStore.getState().updateWOQuantity(wo.id, Math.max(0, wo.produced_quantity - 1));
-                                }}
-                              >
-                                -1
-                              </Button>
-                              <Button 
-                                size="sm" 
-                                variant="outline" 
-                                className="h-8 flex-1 text-[9px] font-bold uppercase rounded-none border-zinc-200 text-zinc-600"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  useProductionStore.getState().updateWOQuantity(wo.id, Math.min(wo.target_quantity, wo.produced_quantity + 1));
-                                }}
-                              >
-                                Increment Progress
-                              </Button>
-                              <Button 
-                                size="sm" 
-                                variant="outline" 
-                                className="h-8 text-[9px] font-bold uppercase rounded-none border-zinc-200 text-zinc-600"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const val = prompt("Enter precise output quantity:", wo.produced_quantity.toString());
-                                  if (val !== null) {
-                                      const num = parseInt(val);
-                                      if (!isNaN(num)) {
-                                          useProductionStore.getState().updateWOQuantity(wo.id, num);
-                                      }
-                                  }
-                                }}
-                              >
-                                SET
-                              </Button>
+                                <div className="text-right min-w-[100px]">
+                                  <div className="text-sm font-mono font-bold text-zinc-900 tracking-tighter">
+                                    {wo.produced_quantity} / {wo.target_quantity}
+                                  </div>
+                                  <div className="text-[9px] text-zinc-400 font-mono uppercase tracking-[0.2em]">Yield_Matrix</div>
+                                </div>
+                              </div>
                             </div>
-                          )}
+                            <div className="space-y-1.5">
+                              <div className="flex justify-between text-[8px] font-mono uppercase tracking-widest text-zinc-400">
+                                <span>Batch_Yield_Dynamics</span>
+                                <span className={cn(
+                                  "font-bold",
+                                  progress >= 100 ? "text-green-600" : progress > 50 ? "text-blue-600" : "text-zinc-400"
+                                )}>{progress}% CAP_UTIL</span>
+                              </div>
+                              <div className="w-full bg-zinc-100 h-1 rounded-full overflow-hidden">
+                                <div 
+                                  className={cn(
+                                    "h-full transition-all duration-700 ease-in-out",
+                                    progress >= 100 ? "bg-green-500" : "bg-blue-600"
+                                  )}
+                                  style={{ width: `${Math.min(100, progress)}%` }} 
+                                />
+                              </div>
+                            </div>
+                          </div>
                        </div>
                        <div className="p-6 border-l border-zinc-100 flex items-center gap-2 relative z-30">
                            <Button 
@@ -249,7 +261,7 @@ export default function ProductionPage() {
                 );
               })
             ) : (
-              <div className="p-12 text-center text-zinc-400 border border-zinc-100 rounded-none bg-zinc-50/30">
+              <div className="p-12 text-center text-zinc-400 border border-zinc-100 rounded-xl bg-zinc-50/30">
                 <p className="font-mono text-[10px] uppercase italic">No active production streams detected</p>
                 <Button 
                   onClick={() => openDialog('wo')}
@@ -264,7 +276,7 @@ export default function ProductionPage() {
         </TabsContent>
 
         <TabsContent value="bom" className="mt-0 outline-none">
-          <Card className="border border-zinc-200 rounded-none shadow-none bg-white">
+          <Card className="border border-zinc-200 rounded-xl shadow-none bg-white">
             <CardHeader className="border-b border-zinc-100 p-4 bg-zinc-50/50">
                <CardTitle className="text-xs font-bold uppercase tracking-widest text-zinc-500">Bill of Materials - Structural Blueprint</CardTitle>
             </CardHeader>
@@ -307,7 +319,7 @@ export default function ProductionPage() {
         </TabsContent>
         <TabsContent value="efficiency" className="mt-0 outline-none">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="border border-zinc-200 rounded-none shadow-none bg-white overflow-hidden">
+            <Card className="border border-zinc-200 rounded-xl shadow-none bg-white overflow-hidden">
                <CardHeader className="border-b border-zinc-100 p-4 bg-zinc-50/50">
                   <CardTitle className="text-xs font-bold uppercase tracking-widest text-zinc-500">Utilization_Matrix</CardTitle>
                </CardHeader>
@@ -323,7 +335,7 @@ export default function ProductionPage() {
                               <span className="text-zinc-600">{m.name} ({m.status})</span>
                               <span className="text-zinc-900 font-bold">{rate}%</span>
                             </div>
-                            <div className="w-full bg-zinc-100 h-1 rounded-none overflow-hidden">
+                            <div className="w-full bg-zinc-100 h-1 rounded-full overflow-hidden">
                               <div 
                                 className={cn(
                                   "h-full transition-all duration-500",
@@ -350,7 +362,7 @@ export default function ProductionPage() {
                   </Button>
                </CardContent>
             </Card>
-            <Card className="border border-zinc-200 rounded-none shadow-none bg-white overflow-hidden">
+            <Card className="border border-zinc-200 rounded-xl shadow-none bg-white overflow-hidden">
                <CardHeader className="border-b border-zinc-100 p-4 bg-zinc-50/50">
                   <CardTitle className="text-xs font-bold uppercase tracking-widest text-zinc-500">OEE_Analytics (Overall_Equipment_Effectiveness)</CardTitle>
                </CardHeader>

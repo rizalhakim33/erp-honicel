@@ -47,7 +47,7 @@ export default function QCPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1 space-y-6">
-          <Card className="border border-zinc-200 rounded-none shadow-none bg-white">
+          <Card className="border border-zinc-200 rounded-xl shadow-none bg-white">
             <CardHeader className="pb-4">
               <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">QC Checklist</CardTitle>
             </CardHeader>
@@ -77,9 +77,9 @@ export default function QCPage() {
             </CardContent>
           </Card>
 
-          <Card className="border border-zinc-200 rounded-none shadow-none bg-zinc-950 text-zinc-400 font-mono text-[10px] p-4">
+          <Card className="border border-zinc-200 rounded-xl shadow-none bg-zinc-950 text-zinc-400 font-mono text-[10px] p-4">
              <div className="flex items-center gap-2 text-green-500 mb-2">
-                <div className="w-1.5 h-1.5 rounded-none bg-green-500 animate-pulse" />
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                 SYSTEM READY
              </div>
              <div>&gt; LATENCY: 2ms</div>
@@ -88,7 +88,7 @@ export default function QCPage() {
           </Card>
         </div>
 
-        <Card className="lg:col-span-3 border border-zinc-200 rounded-none shadow-none bg-white overflow-hidden">
+        <Card className="lg:col-span-3 border border-zinc-200 rounded-xl shadow-none bg-white overflow-hidden">
           <CardHeader className="bg-zinc-50/50 border-b border-zinc-100 p-4">
              <div className="flex items-center justify-between">
                 <CardTitle className="text-xs font-bold uppercase tracking-widest text-zinc-500">Registry: Sample Analysis</CardTitle>
