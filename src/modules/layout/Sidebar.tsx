@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Package, 
@@ -29,6 +29,7 @@ const navigation = [
 
 export const Sidebar = ({ isOpen, setOpen }: { isOpen: boolean, setOpen: (v: boolean) => void }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, role, logout } = useAuthStore();
 
   return (
@@ -95,7 +96,7 @@ export const Sidebar = ({ isOpen, setOpen }: { isOpen: boolean, setOpen: (v: boo
               size="sm" 
               onClick={() => {
                 logout();
-                window.location.href = '/login';
+                navigate('/login');
               }}
               className="ml-auto p-0 h-6 w-6 text-zinc-500 hover:text-white"
             >
