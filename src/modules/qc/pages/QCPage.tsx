@@ -16,11 +16,10 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 import { useQCStore } from '../store/useQCStore';
-
-import { AddQCLogDialog } from '../components/AddQCLogDialog';
+import { useDialogStore } from '@/store/useDialogStore';
 
 export default function QCPage() {
-  const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
+  const { open: openDialog } = useDialogStore();
   const { logs, fetchLogs, loading } = useQCStore();
 
   React.useEffect(() => {
@@ -36,7 +35,7 @@ export default function QCPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button 
-            onClick={() => setIsAddDialogOpen(true)}
+            onClick={() => openDialog('qc')}
             size="sm" 
             className="bg-zinc-900 text-white hover:bg-zinc-800 text-[10px] font-bold uppercase tracking-widest h-9"
           >
@@ -45,8 +44,6 @@ export default function QCPage() {
           </Button>
         </div>
       </div>
-
-      <AddQCLogDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1 space-y-6">

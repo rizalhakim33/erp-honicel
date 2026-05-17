@@ -65,7 +65,10 @@ export function AddMachineDialog({ open, onOpenChange, onSuccess }: AddMachineDi
         .from('machines')
         .insert([values]);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase Error (Register Asset):', error);
+        throw error;
+      }
 
       toast.success("Machine registered successfully");
       await fetchMachines();

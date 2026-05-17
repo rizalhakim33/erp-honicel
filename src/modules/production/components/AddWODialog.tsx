@@ -45,12 +45,14 @@ interface AddWODialogProps {
 
 import { useProductionStore } from "../store/useProductionStore";
 import { supabase } from "@/lib/supabase";
+import { useDialogStore } from "@/store/useDialogStore";
 
 export function AddWODialog({ open, onOpenChange, onSuccess }: AddWODialogProps) {
   const [loading, setLoading] = React.useState(false);
   const [boms, setBoms] = React.useState<{id: string, name: string}[]>([]);
   const [machines, setMachines] = React.useState<{id: string, name: string}[]>([]);
   const { createWorkOrder, fetchWorkOrders } = useProductionStore();
+  const openDialog = useDialogStore(state => state.open);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -126,8 +128,8 @@ export function AddWODialog({ open, onOpenChange, onSuccess }: AddWODialogProps)
                       ) : (
                         <div className="p-2 text-[10px] font-mono uppercase text-zinc-400 text-center space-y-2">
                           <p>No BOMs found</p>
-                          <Button asChild variant="outline" size="sm" className="w-full text-zinc-900 border-zinc-200 h-7 rounded-none">
-                            <Link to="/production">Add Product</Link>
+                          <Button type="button" onClick={() => openDialog('bom')} variant="outline" size="sm" className="w-full text-zinc-900 border-zinc-200 h-7 rounded-none">
+                            Add BOM
                           </Button>
                         </div>
                       )}
@@ -157,8 +159,8 @@ export function AddWODialog({ open, onOpenChange, onSuccess }: AddWODialogProps)
                       ) : (
                         <div className="p-2 text-[10px] font-mono uppercase text-zinc-400 text-center space-y-2">
                           <p>No machines found</p>
-                          <Button asChild variant="outline" size="sm" className="w-full text-zinc-900 border-zinc-200 h-7 rounded-none">
-                            <Link to="/maintenance">Add Machine</Link>
+                          <Button type="button" onClick={() => openDialog('machine')} variant="outline" size="sm" className="w-full text-zinc-900 border-zinc-200 h-7 rounded-none">
+                            Add Machine
                           </Button>
                         </div>
                       )}

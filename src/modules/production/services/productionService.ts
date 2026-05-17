@@ -23,7 +23,10 @@ export const productionService = {
       `)
       .order('created_at', { ascending: false });
     
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase Error (getWorkOrders):', error);
+      throw error;
+    }
     return (data || []).map(wo => ({
       ...wo,
       product_name: wo.boms?.name,

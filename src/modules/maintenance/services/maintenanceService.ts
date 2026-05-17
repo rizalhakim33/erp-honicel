@@ -31,25 +31,34 @@ export const maintenanceService = {
     })) as MaintenanceLog[];
   },
 
-  async createLog(log: Omit<MaintenanceLog, 'id'>) {
+  async createLog(log: Omit<MaintenanceLog, 'id' | 'status'>) {
     const { data, error } = await supabase
       .from('maintenance_logs')
       .insert([log])
       .select()
       .single();
     
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase Error (createLog):', error);
+      throw error;
+    }
     return data as MaintenanceLog;
   },
 
-  async updateLogStatus(id: string, status: MaintenanceLog['status']) {
+  async updateLogStatus(id: string, status: string) {
+    const isCompleted = status === 'completed';
     const { data, error } = await supabase
       .from('maintenance_logs')
-      .update({ status, end_time: status === 'completed' ? new Date().toISOString() : null })
+      .update({ 
+        end_time: isCompleted ? new Date().toISOString() : null 
+      })
       .eq('id', id)
       .select()
       .single();
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase Error (updateLogStatus):', error);
+      throw error;
+    }
     return data;
   },
 

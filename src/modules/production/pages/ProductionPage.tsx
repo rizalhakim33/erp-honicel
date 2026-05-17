@@ -1,19 +1,16 @@
 import * as React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Plus, Search, Factory, ListTree, Activity, AlertCircle, Filter, Download, Trash2 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { Plus, ListTree, Activity, Filter, Download, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { AddWODialog } from '../components/AddWODialog';
-import { AddBOMDialog } from '../components/AddBOMDialog';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useProductionStore } from '../store/useProductionStore';
+import { useDialogStore } from '@/store/useDialogStore';
 
 export default function ProductionPage() {
-  const [isAddWODialogOpen, setIsAddWODialogOpen] = React.useState(false);
-  const [isAddBOMDialogOpen, setIsAddBOMDialogOpen] = React.useState(false);
+  const { open: openDialog } = useDialogStore();
   const { workOrders, boms, machines, fetchWorkOrders, fetchBoms, fetchMachines, loading } = useProductionStore();
 
   React.useEffect(() => {
@@ -31,7 +28,7 @@ export default function ProductionPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button 
-            onClick={() => setIsAddBOMDialogOpen(true)}
+            onClick={() => openDialog('bom')}
             variant="outline"
             size="sm" 
             className="border-zinc-200 text-zinc-600 hover:text-zinc-900 text-[10px] font-bold uppercase tracking-widest h-9"
@@ -40,7 +37,7 @@ export default function ProductionPage() {
             ARCHITECT_BOM
           </Button>
           <Button 
-            onClick={() => setIsAddWODialogOpen(true)}
+            onClick={() => openDialog('wo')}
             size="sm" 
             className="bg-zinc-900 text-white hover:bg-zinc-800 text-[10px] font-bold uppercase tracking-widest h-9"
           >
@@ -49,9 +46,6 @@ export default function ProductionPage() {
           </Button>
         </div>
       </div>
-
-      <AddWODialog open={isAddWODialogOpen} onOpenChange={setIsAddWODialogOpen} />
-      <AddBOMDialog open={isAddBOMDialogOpen} onOpenChange={setIsAddBOMDialogOpen} />
 
       <Tabs defaultValue="work-orders" className="w-full">
         <div className="flex items-center justify-between mb-6 border-b border-zinc-200">
@@ -91,24 +85,17 @@ export default function ProductionPage() {
                           </div>
                        </div>
                        <div className="p-6 flex-1 flex flex-col gap-4">
-                          <div className="flex justify-between items-start">
+                          <div className="flex justify-between items-center">
                              <div>
                                 <div className="text-xs font-bold text-zinc-900 uppercase tracking-tight">{wo.product_name || 'Internal Product'}</div>
                                 <div className="text-[10px] text-zinc-500 font-mono mt-1">Resource Allocation: {wo.machine_name || 'Unassigned'}</div>
                              </div>
                              <div className="text-right">
-                                <div className="text-xs font-mono font-bold text-zinc-900">{progress}%</div>
-                                <div className="text-[10px] text-zinc-400 font-mono">Realtime Progress</div>
+                                <div className="text-sm font-mono font-bold text-zinc-900">
+                                  {wo.produced_quantity} / {wo.target_quantity} UN_OPS
+                                </div>
+                                <div className="text-[9px] text-zinc-400 font-mono uppercase tracking-widest">Yield_Matrix</div>
                              </div>
-                          </div>
-                          <div className="w-full bg-zinc-100 h-1.5 rounded-full overflow-hidden">
-                             <div 
-                               className={cn(
-                                 "h-full transition-all duration-1000",
-                                 progress === 100 ? "bg-green-500" : progress > 50 ? "bg-blue-500" : progress > 0 ? "bg-amber-500" : "bg-zinc-300"
-                               )} 
-                               style={{ width: `${progress}%` }}
-                             />
                           </div>
                        </div>
                        <div className="p-6 border-l border-zinc-100 flex items-center gap-2">
@@ -157,7 +144,7 @@ export default function ProductionPage() {
               <div className="p-12 text-center text-zinc-400 border border-zinc-100 rounded-xl bg-zinc-50/30">
                 <p className="font-mono text-[10px] uppercase italic">No active production streams detected</p>
                 <Button 
-                  onClick={() => setIsAddWODialogOpen(true)}
+                  onClick={() => openDialog('wo')}
                   variant="link" 
                   className="mt-2 text-blue-600 font-mono text-[10px] uppercase"
                 >
@@ -179,7 +166,7 @@ export default function ProductionPage() {
                   <TableRow className="hover:bg-transparent border-b border-zinc-100">
                     <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic">FG_Product</TableHead>
                     <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic">Description</TableHead>
-                    <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic">Process_Flow</TableHead>
+                    <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic">Version</TableHead>
                     <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -188,8 +175,8 @@ export default function ProductionPage() {
                     boms.map((bom) => (
                       <TableRow key={bom.id} className="hover:bg-zinc-50 border-none">
                         <TableCell className="text-xs font-bold text-zinc-900">{bom.name}</TableCell>
-                        <TableCell className="text-[10px] text-zinc-600 font-mono italic">{bom.description || 'N/A'}</TableCell>
-                        <TableCell className="text-[10px] text-zinc-500 italic uppercase">{bom.process_flow || 'Standard Process'}</TableCell>
+                        <TableCell className="text-[10px] text-zinc-600 font-mono italic">{bom.product_name || 'N/A'}</TableCell>
+                        <TableCell className="text-[10px] text-zinc-500 italic uppercase">v{bom.version || '1.0'}</TableCell>
                         <TableCell className="text-right">
                            <Button 
                              onClick={() => toast.info(`Accessing BOM structure for ${bom.name}...`)}
@@ -220,7 +207,7 @@ export default function ProductionPage() {
                   <div className="space-y-4">
                     {machines.length > 0 ? (
                       machines.map(m => {
-                        const rate = Math.floor(Math.random() * (98 - 70 + 1) + 70); // Mocking rate based on machine, but fetching names
+                        const rate = Math.floor(Math.random() * (98 - 70 + 1) + 70);
                         return (
                           <div key={m.id} className="space-y-1.5">
                             <div className="flex justify-between text-[10px] font-mono uppercase">

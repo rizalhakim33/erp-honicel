@@ -10,9 +10,10 @@ import { toast } from 'sonner';
 
 import { useInventoryStore } from '../store/useInventoryStore';
 import * as React from 'react';
+import { useDialogStore } from '@/store/useDialogStore';
 
 export default function InventoryPage() {
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const { open: openDialog } = useDialogStore();
   const { items, fetchItems, loading } = useInventoryStore();
 
   React.useEffect(() => {
@@ -31,7 +32,7 @@ export default function InventoryPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button 
-            onClick={() => setIsAddDialogOpen(true)}
+            onClick={() => openDialog('item')}
             size="sm" 
             className="bg-zinc-900 text-white hover:bg-zinc-800 text-[10px] font-bold uppercase tracking-widest h-9"
           >
@@ -40,8 +41,6 @@ export default function InventoryPage() {
           </Button>
         </div>
       </div>
-
-      <AddItemDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <KPICard title="Total SKUs" value={totalSKUs.toString()} icon={Package} color="slate" />

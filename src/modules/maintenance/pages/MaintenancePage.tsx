@@ -16,12 +16,10 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 import { useMaintenanceStore } from '../store/useMaintenanceStore';
-import { AddMaintenanceLogDialog } from '../components/AddMaintenanceLogDialog';
-import { AddMachineDialog } from '../components/AddMachineDialog';
+import { useDialogStore } from '@/store/useDialogStore';
 
 export default function MaintenancePage() {
-  const [isAddLogDialogOpen, setIsAddLogDialogOpen] = React.useState(false);
-  const [isAddMachineDialogOpen, setIsAddMachineDialogOpen] = React.useState(false);
+  const { open: openDialog } = useDialogStore();
   const { logs, fetchLogs, loading } = useMaintenanceStore();
 
   React.useEffect(() => {
@@ -37,7 +35,7 @@ export default function MaintenancePage() {
         </div>
         <div className="flex items-center gap-2">
           <Button 
-            onClick={() => setIsAddMachineDialogOpen(true)}
+            onClick={() => openDialog('machine')}
             variant="outline"
             size="sm" 
             className="border-zinc-200 text-zinc-600 hover:text-zinc-900 text-[10px] font-bold uppercase tracking-widest h-9"
@@ -46,7 +44,7 @@ export default function MaintenancePage() {
             REGISTER_ASSET
           </Button>
           <Button 
-            onClick={() => setIsAddLogDialogOpen(true)}
+            onClick={() => openDialog('maintenance')}
             size="sm" 
             className="bg-zinc-900 text-white hover:bg-zinc-800 text-[10px] font-bold uppercase tracking-widest h-9"
           >
@@ -55,9 +53,6 @@ export default function MaintenancePage() {
           </Button>
         </div>
       </div>
-
-      <AddMaintenanceLogDialog open={isAddLogDialogOpen} onOpenChange={setIsAddLogDialogOpen} />
-      <AddMachineDialog open={isAddMachineDialogOpen} onOpenChange={setIsAddMachineDialogOpen} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="border border-zinc-200 rounded-xl shadow-none bg-white lg:col-span-2">

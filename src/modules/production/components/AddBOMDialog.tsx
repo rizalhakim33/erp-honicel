@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/select";
 import { Link } from "react-router-dom";
 import { useInventoryStore } from "../../inventory/store/useInventoryStore";
+import { useDialogStore } from "@/store/useDialogStore";
 
 const formSchema = z.object({
   name: z.string().min(2, "Product name is required"),
@@ -50,6 +51,7 @@ export function AddBOMDialog({ open, onOpenChange, onSuccess }: AddBOMDialogProp
   const [loading, setLoading] = React.useState(false);
   const { fetchBoms } = useProductionStore();
   const { items, fetchItems } = useInventoryStore();
+  const openDialog = useDialogStore(state => state.open);
 
   React.useEffect(() => {
     if (open) {
@@ -133,8 +135,8 @@ export function AddBOMDialog({ open, onOpenChange, onSuccess }: AddBOMDialogProp
                       ) : (
                         <div className="p-2 text-[10px] font-mono uppercase text-zinc-400 text-center space-y-2">
                           <p>No products found</p>
-                          <Button asChild variant="outline" size="sm" className="w-full text-zinc-900 border-zinc-200 h-7 rounded-none">
-                            <Link to="/inventory">Add Product</Link>
+                          <Button type="button" onClick={() => openDialog('item')} variant="outline" size="sm" className="w-full text-zinc-900 border-zinc-200 h-7 rounded-none">
+                            Add Product
                           </Button>
                         </div>
                       )}

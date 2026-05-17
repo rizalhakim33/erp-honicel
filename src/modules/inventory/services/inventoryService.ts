@@ -19,12 +19,12 @@ export const inventoryService = {
   },
 
   async addItem(item: Omit<InventoryItem, 'id' | 'status'>) {
-    let itemType = 'other';
+    let itemType: 'raw_material' | 'semi_finished' | 'finished_good' | 'sparepart' = 'raw_material';
     const cat = item.category.toLowerCase();
     if (cat.includes('raw')) itemType = 'raw_material';
     else if (cat.includes('finished')) itemType = 'finished_good';
-    else if (cat.includes('chemical')) itemType = 'chemical';
-    else if (cat.includes('packaging')) itemType = 'packaging';
+    else if (cat.includes('semi')) itemType = 'semi_finished';
+    else if (cat.includes('spare') || cat.includes('part') || cat.includes('asset')) itemType = 'sparepart';
 
     const { data, error } = await supabase
       .from('items')
@@ -38,7 +38,10 @@ export const inventoryService = {
       .select()
       .single();
     
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase Error (addItem):', error);
+      throw error;
+    }
     return {
       ...data,
       category: data.type,

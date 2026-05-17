@@ -139,8 +139,8 @@ export default function DashboardPage() {
                   <TableRow className="hover:bg-transparent border-b border-zinc-100">
                     <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic">Order ID</TableHead>
                     <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic">Product / BOM</TableHead>
-                    <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic text-center">Progress</TableHead>
-                    <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic text-right">Status</TableHead>
+                    <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic">Status</TableHead>
+                    <TableHead className="text-[10px] font-mono text-zinc-400 uppercase italic text-right">Production (Units)</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="divide-y divide-zinc-100">
@@ -150,21 +150,13 @@ export default function DashboardPage() {
                     </TableRow>
                   ) : recentWOs.length > 0 ? (
                     recentWOs.map((wo) => {
-                      const progress = Math.round((wo.produced_quantity / wo.target_quantity) * 100) || 0;
                       return (
                         <TableRow key={wo.id} className="hover:bg-zinc-50 transition-colors border-none group">
                           <TableCell className="font-mono text-xs text-zinc-500 py-4">{wo.wo_number}</TableCell>
                           <TableCell className="py-4">
                             <div className="text-xs font-semibold text-zinc-900">{wo.product_name || 'N/A'}</div>
-                            <div className="text-[10px] text-zinc-400 font-mono">ID: {wo.id.substring(0, 8)}</div>
                           </TableCell>
                           <TableCell className="py-4">
-                            <div className="flex flex-col items-center gap-0.5">
-                              <span className="text-sm font-mono font-bold text-zinc-900">{progress}%</span>
-                              <span className="text-[8px] font-mono text-zinc-400 uppercase tracking-tighter">Utilization</span>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-right py-4">
                             <span className={cn(
                               "px-2 py-0.5 text-[10px] rounded font-bold uppercase",
                               wo.status === 'completed' ? "bg-green-100 text-green-700" : 
@@ -173,6 +165,9 @@ export default function DashboardPage() {
                             )}>
                               {wo.status.replace('_', ' ')}
                             </span>
+                          </TableCell>
+                          <TableCell className="text-right py-4 font-mono text-xs text-zinc-900 font-bold">
+                            {wo.produced_quantity} / {wo.target_quantity}
                           </TableCell>
                         </TableRow>
                       );
@@ -193,17 +188,17 @@ export default function DashboardPage() {
           </Card>
         </motion.div>
 
-        {/* Machine Status */}
+        {/* Asset Health Monitoring */}
         <motion.div variants={item} className="lg:col-span-4">
           <Card className="border border-zinc-200 rounded-xl shadow-none bg-white h-full flex flex-col">
             <CardHeader className="pb-4 border-b border-zinc-50 bg-zinc-50/30">
-              <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 font-mono">Operations_Terminal</CardTitle>
+              <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 font-mono">Asset Health Monitoring</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6 p-6">
               {dashboardMachines.length > 0 ? (
                 dashboardMachines.map((m) => {
-                  const health = m.status === 'operational' ? 100 : m.status === 'maintenance' ? 45 : 10;
-                  const color = m.status === 'operational' ? 'green' : m.status === 'maintenance' ? 'amber' : 'red';
+                  const health = m.status === 'operational' || m.status === 'running' ? 100 : m.status === 'maintenance' || m.status === 'idle' ? 45 : 10;
+                  const color = m.status === 'operational' || m.status === 'running' ? 'green' : (m.status === 'maintenance' || m.status === 'idle') ? 'amber' : 'red';
                   return (
                     <div key={m.id} className="flex flex-col gap-3">
                       <div className="flex items-center justify-between">
@@ -220,7 +215,7 @@ export default function DashboardPage() {
                         <div 
                           className={cn(
                             "h-full transition-all duration-1000",
-                            color === 'green' ? "bg-zinc-900" : color === 'amber' ? "bg-amber-400" : "bg-red-500"
+                            color === 'green' ? "bg-green-500" : color === 'amber' ? "bg-amber-400" : "bg-red-500"
                           )} 
                           style={{ width: `${health}%` }}
                         />
@@ -239,14 +234,14 @@ export default function DashboardPage() {
                       <div className="text-xl font-mono text-zinc-900 font-bold tracking-tighter">88.4%</div>
                    </div>
                    <div className="text-right">
-                      <div className="text-[10px] text-zinc-400 uppercase font-mono mb-1">Idle_Time</div>
-                      <div className="text-xl font-mono text-amber-600 font-bold tracking-tighter">42m</div>
+                      <div className="text-[10px] text-zinc-400 uppercase font-mono mb-1">Queue_Size</div>
+                      <div className="text-xl font-mono text-blue-600 font-bold tracking-tighter">{activeWOs.length}</div>
                    </div>
                 </div>
               </div>
 
-              <Button asChild className="w-full mt-4 bg-zinc-900 text-white hover:bg-zinc-800 text-[10px] font-bold uppercase tracking-widest h-10 rounded-none" size="sm">
-                <Link to="/maintenance">SYSTEM_DIAGNOSTICS</Link>
+              <Button asChild variant="outline" className="w-full mt-4 border-zinc-200 text-zinc-600 hover:text-zinc-900 text-[10px] font-bold uppercase tracking-widest h-10 rounded-none border-dashed" size="sm">
+                <Link to="/maintenance">ASSET_FACILITY_LOGS</Link>
               </Button>
             </CardContent>
           </Card>

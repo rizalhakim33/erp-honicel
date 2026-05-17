@@ -46,11 +46,13 @@ interface AddPODialogProps {
 
 import { usePurchasingStore } from "../store/usePurchasingStore";
 import { supabase } from "@/lib/supabase";
+import { useDialogStore } from "@/store/useDialogStore";
 
 export function AddPODialog({ open, onOpenChange, onSuccess }: AddPODialogProps) {
   const [loading, setLoading] = React.useState(false);
   const [suppliers, setSuppliers] = React.useState<{id: string, name: string}[]>([]);
   const { createPO, fetchPurchaseOrders } = usePurchasingStore();
+  const openDialog = useDialogStore(state => state.open);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -123,8 +125,8 @@ export function AddPODialog({ open, onOpenChange, onSuccess }: AddPODialogProps)
                       ) : (
                         <div className="p-2 text-[10px] font-mono uppercase text-zinc-400 text-center space-y-2">
                           <p>No vendors found</p>
-                          <Button asChild variant="outline" size="sm" className="w-full text-zinc-900 border-zinc-200 h-7 rounded-none">
-                            <Link to="/purchasing">Add Vendor</Link>
+                          <Button type="button" onClick={() => openDialog('supplier')} variant="outline" size="sm" className="w-full text-zinc-900 border-zinc-200 h-7 rounded-none">
+                            Add Vendor
                           </Button>
                         </div>
                       )}

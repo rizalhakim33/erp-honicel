@@ -9,6 +9,7 @@ import MaintenancePage from './modules/maintenance/pages/MaintenancePage';
 import QCPage from './modules/qc/pages/QCPage';
 import SettingsPage from './modules/settings/pages/SettingsPage';
 import { Toaster } from '@/components/ui/sonner';
+import { GlobalDialogs } from './components/GlobalDialogs';
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
+      <GlobalDialogs />
       <Toaster />
     </Router>
   );

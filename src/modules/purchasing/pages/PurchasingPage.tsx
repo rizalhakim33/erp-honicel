@@ -11,10 +11,10 @@ import { toast } from 'sonner';
 
 import { usePurchasingStore } from '../store/usePurchasingStore';
 import { cn } from '@/lib/utils';
+import { useDialogStore } from '@/store/useDialogStore';
 
 export default function PurchasingPage() {
-  const [isAddPODialogOpen, setIsAddPODialogOpen] = React.useState(false);
-  const [isAddSupplierDialogOpen, setIsAddSupplierDialogOpen] = React.useState(false);
+  const { open: openDialog } = useDialogStore();
   const { purchaseOrders, suppliers, fetchPurchaseOrders, fetchSuppliers, loading } = usePurchasingStore();
 
   React.useEffect(() => {
@@ -31,7 +31,7 @@ export default function PurchasingPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button 
-            onClick={() => setIsAddSupplierDialogOpen(true)}
+            onClick={() => openDialog('supplier')}
             variant="outline"
             size="sm" 
             className="border-zinc-200 text-zinc-600 hover:text-zinc-900 text-[10px] font-bold uppercase tracking-widest h-9"
@@ -40,7 +40,7 @@ export default function PurchasingPage() {
             REGISTER_VENDOR
           </Button>
           <Button 
-            onClick={() => setIsAddPODialogOpen(true)}
+            onClick={() => openDialog('po')}
             size="sm" 
             className="bg-zinc-900 text-white hover:bg-zinc-800 text-[10px] font-bold uppercase tracking-widest h-9"
           >
@@ -49,9 +49,6 @@ export default function PurchasingPage() {
           </Button>
         </div>
       </div>
-
-      <AddPODialog open={isAddPODialogOpen} onOpenChange={setIsAddPODialogOpen} />
-      <AddSupplierDialog open={isAddSupplierDialogOpen} onOpenChange={setIsAddSupplierDialogOpen} />
 
       <Tabs defaultValue="po" className="w-full">
         <div className="flex items-center justify-between mb-6 border-b border-zinc-200">

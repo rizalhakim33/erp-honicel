@@ -31,6 +31,7 @@ import {
 import { Link } from "react-router-dom";
 import { useQCStore } from "../store/useQCStore";
 import { supabase } from "@/lib/supabase";
+import { useDialogStore } from "@/store/useDialogStore";
 
 const formSchema = z.object({
   work_order_id: z.string().optional(),
@@ -48,6 +49,7 @@ export function AddQCLogDialog({ open, onOpenChange }: AddQCLogDialogProps) {
   const [loading, setLoading] = React.useState(false);
   const [workOrders, setWorkOrders] = React.useState<{id: string, wo_number: string}[]>([]);
   const { createLog, fetchLogs } = useQCStore();
+  const openDialog = useDialogStore(state => state.open);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -118,8 +120,8 @@ export function AddQCLogDialog({ open, onOpenChange }: AddQCLogDialogProps) {
                       ) : (
                         <div className="p-2 text-[10px] font-mono uppercase text-zinc-400 text-center space-y-2">
                           <p>No Work Orders found</p>
-                          <Button asChild variant="outline" size="sm" className="w-full text-zinc-900 border-zinc-200 h-7 rounded-none">
-                            <Link to="/production">Add Work Order</Link>
+                          <Button type="button" onClick={() => openDialog('wo')} variant="outline" size="sm" className="w-full text-zinc-900 border-zinc-200 h-7 rounded-none">
+                            Add Work Order
                           </Button>
                         </div>
                       )}

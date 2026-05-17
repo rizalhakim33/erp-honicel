@@ -31,6 +31,7 @@ import {
 import { Link } from "react-router-dom";
 import { useMaintenanceStore } from "../store/useMaintenanceStore";
 import { supabase } from "@/lib/supabase";
+import { useDialogStore } from "@/store/useDialogStore";
 
 const formSchema = z.object({
   machine_id: z.string().min(1, "Machine index is required"),
@@ -48,6 +49,7 @@ export function AddMaintenanceLogDialog({ open, onOpenChange }: AddMaintenanceLo
   const [loading, setLoading] = React.useState(false);
   const [machines, setMachines] = React.useState<{id: string, name: string}[]>([]);
   const { createLog, fetchLogs } = useMaintenanceStore();
+  const openDialog = useDialogStore(state => state.open);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -74,7 +76,6 @@ export function AddMaintenanceLogDialog({ open, onOpenChange }: AddMaintenanceLo
         machine_id: values.machine_id,
         type: values.type,
         description: values.description,
-        status: values.status,
         start_time: new Date().toISOString(),
       });
       toast.success("Maintenance log initialized");
@@ -119,8 +120,8 @@ export function AddMaintenanceLogDialog({ open, onOpenChange }: AddMaintenanceLo
                       ) : (
                         <div className="p-2 text-[10px] font-mono uppercase text-zinc-400 text-center space-y-2">
                           <p>No machines found</p>
-                          <Button asChild variant="outline" size="sm" className="w-full text-zinc-900 border-zinc-200 h-7 rounded-none">
-                            <Link to="/maintenance">Add Machine</Link>
+                          <Button type="button" onClick={() => openDialog('machine')} variant="outline" size="sm" className="w-full text-zinc-900 border-zinc-200 h-7 rounded-none">
+                            Add Machine
                           </Button>
                         </div>
                       )}

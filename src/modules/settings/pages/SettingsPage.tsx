@@ -15,7 +15,29 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+
 export default function SettingsPage() {
+  const [dbStatus, setDbStatus] = React.useState<'checking' | 'connected' | 'error' | 'unconfigured'>('checking');
+
+  React.useEffect(() => {
+    async function checkConn() {
+      if (!isSupabaseConfigured) {
+        setDbStatus('unconfigured');
+        return;
+      }
+      try {
+        const { error } = await supabase.from('profiles').select('count', { count: 'exact', head: true });
+        if (error) throw error;
+        setDbStatus('connected');
+      } catch (e) {
+        console.error('Connection check failed:', e);
+        setDbStatus('error');
+      }
+    }
+    checkConn();
+  }, []);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -45,6 +67,22 @@ export default function SettingsPage() {
               {item.label}
             </button>
           ))}
+          
+          <div className="mt-6 p-4 border border-dashed border-zinc-200 rounded-lg">
+             <div className="text-[9px] font-mono uppercase text-zinc-400 mb-2">Supabase_Link</div>
+             <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${
+                  dbStatus === 'connected' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 
+                  dbStatus === 'checking' ? 'bg-zinc-300 animate-pulse' :
+                  'bg-red-500'
+                }`} />
+                <span className="text-[10px] font-mono uppercase font-bold text-zinc-700">
+                  {dbStatus === 'connected' ? 'Online' : 
+                   dbStatus === 'checking' ? 'Checking...' :
+                   dbStatus === 'unconfigured' ? 'Not Configured' : 'Offline / RLS Blocked'}
+                </span>
+             </div>
+          </div>
         </div>
 
         <div className="md:col-span-3 space-y-6">
