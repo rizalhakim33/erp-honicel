@@ -49,10 +49,16 @@ export default function LoginPage() {
 
   const handleDemoLogin = async (role: string) => {
     toast.info(`Initiating bypass for ${role} profile...`);
-    // In a real app, you'd use specific demo accounts
-    // For this preview, if Supabase isn't configured, we might want to mock it
-    // But for now, we'll try to use the real login if possible
-    toast.error('Demo accounts not configured in production registry. Please use valid credentials.');
+    
+    // Simulate login for preview purposes
+    setLoading(true);
+    setTimeout(() => {
+      useAuthStore.getState().setRole(role);
+      useAuthStore.getState().setUser({ email: `${role}@honicel.id`, id: 'demo-uid' } as any);
+      useAuthStore.getState().setLoading(false);
+      toast.success(`Access Granted as ${role.toUpperCase()}`);
+      navigate('/');
+    }, 800);
   };
 
   return (

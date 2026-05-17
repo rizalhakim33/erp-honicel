@@ -9,7 +9,8 @@ import {
   BarChart3, 
   Settings,
   Menu,
-  X
+  X,
+  LogOut
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -28,7 +29,7 @@ const navigation = [
 
 export const Sidebar = ({ isOpen, setOpen }: { isOpen: boolean, setOpen: (v: boolean) => void }) => {
   const location = useLocation();
-  const { user, role } = useAuthStore();
+  const { user, role, logout } = useAuthStore();
 
   return (
     <>
@@ -89,6 +90,17 @@ export const Sidebar = ({ isOpen, setOpen }: { isOpen: boolean, setOpen: (v: boo
               </div>
               <div className="text-[10px] text-zinc-500 font-mono uppercase">Role: {role || 'Viewer'}</div>
             </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => {
+                logout();
+                window.location.href = '/login';
+              }}
+              className="ml-auto p-0 h-6 w-6 text-zinc-500 hover:text-white"
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
           </div>
         </div>
       </aside>

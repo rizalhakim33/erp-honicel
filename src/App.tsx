@@ -13,6 +13,7 @@ import SettingsPage from './modules/settings/pages/SettingsPage';
 import { Toaster } from '@/components/ui/sonner';
 import { GlobalDialogs } from './components/GlobalDialogs';
 import { useAuthStore } from './modules/auth/store/useAuthStore';
+import { useAuth } from './modules/auth/hooks/useAuth';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuthStore();
@@ -33,6 +34,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  useAuth();
+  
   return (
     <Router>
       <Routes>

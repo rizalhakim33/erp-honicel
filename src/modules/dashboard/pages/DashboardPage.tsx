@@ -61,6 +61,12 @@ export default function DashboardPage() {
   const recentWOs = workOrders.slice(0, 4);
   const dashboardMachines = machines.slice(0, 3);
 
+  const utilization = React.useMemo(() => {
+    if (!machines.length) return 0;
+    const running = machines.filter(m => m.status === 'running').length;
+    return Math.round((running / machines.length) * 100);
+  }, [machines]);
+
   return (
     <motion.div 
       variants={container}
@@ -231,7 +237,7 @@ export default function DashboardPage() {
                 <div className="flex justify-between items-end">
                    <div>
                       <div className="text-[10px] text-zinc-400 uppercase font-mono mb-1">Utilization</div>
-                      <div className="text-xl font-mono text-zinc-900 font-bold tracking-tighter">88.4%</div>
+                      <div className="text-xl font-mono text-zinc-900 font-bold tracking-tighter">{utilization}%</div>
                    </div>
                    <div className="text-right">
                       <div className="text-[10px] text-zinc-400 uppercase font-mono mb-1">Queue_Size</div>
