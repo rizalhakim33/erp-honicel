@@ -15,6 +15,7 @@ interface ProductionState {
   deleteMachine: (id: string) => Promise<void>;
   createWorkOrder: (wo: Omit<WorkOrder, 'id' | 'wo_number' | 'status' | 'produced_quantity'>) => Promise<void>;
   updateWOStatus: (id: string, status: WorkOrder['status']) => Promise<void>;
+  updateWOQuantity: (id: string, quantity: number) => Promise<void>;
   deleteWorkOrder: (id: string) => Promise<void>;
 }
 
@@ -99,6 +100,17 @@ export const useProductionStore = create<ProductionState>((set, get) => ({
   updateWOStatus: async (id, status) => {
     try {
       const updated = await productionService.updateWOStatus(id, status);
+      set({
+        workOrders: get().workOrders.map(wo => wo.id === id ? { ...wo, ...updated } : wo)
+      });
+    } catch (error: any) {
+      set({ error: error.message });
+    }
+  },
+
+  updateWOQuantity: async (id, quantity) => {
+    try {
+      const updated = await productionService.updateWOQuantity(id, quantity);
       set({
         workOrders: get().workOrders.map(wo => wo.id === id ? { ...wo, ...updated } : wo)
       });

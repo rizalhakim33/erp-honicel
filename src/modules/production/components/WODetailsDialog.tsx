@@ -130,7 +130,45 @@ export function WODetailsDialog({ open, onOpenChange, workOrder }: WODetailsDial
               <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 font-mono">Production_Progress</span>
               <span className="text-xs font-mono font-bold">{workOrder.produced_quantity} / {workOrder.target_quantity}</span>
             </div>
-            <div className="w-full h-2 bg-zinc-100 overflow-hidden rounded-full">
+            
+            {workOrder.status === 'in_progress' && (
+              <div className="flex gap-2 mb-2">
+                <Button 
+                  onClick={() => {
+                    const newQty = Math.max(0, workOrder.produced_quantity - 1);
+                    useProductionStore.getState().updateWOQuantity(workOrder.id, newQty);
+                  }}
+                  variant="outline" size="sm" className="h-8 rounded-none border-zinc-200 text-zinc-600 px-3"
+                >
+                  -1
+                </Button>
+                <Button 
+                  onClick={() => {
+                    const newQty = Math.min(workOrder.target_quantity, workOrder.produced_quantity + 1);
+                    useProductionStore.getState().updateWOQuantity(workOrder.id, newQty);
+                  }}
+                  variant="outline" size="sm" className="h-8 rounded-none border-zinc-200 text-zinc-600 flex-1"
+                >
+                  Increment Progress
+                </Button>
+                <Button 
+                  onClick={() => {
+                    const val = prompt("Enter precise output quantity:", workOrder.produced_quantity);
+                    if (val !== null) {
+                        const num = parseInt(val);
+                        if (!isNaN(num)) {
+                            useProductionStore.getState().updateWOQuantity(workOrder.id, num);
+                        }
+                    }
+                  }}
+                  variant="outline" size="sm" className="h-8 rounded-none border-zinc-200 text-zinc-600 px-3"
+                >
+                  SET
+                </Button>
+              </div>
+            )}
+
+            <div className="w-full h-2 bg-zinc-100 overflow-hidden rounded-none">
               <div 
                 className={cn(
                   "h-full transition-all duration-1000",

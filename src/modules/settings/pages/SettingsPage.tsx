@@ -101,6 +101,8 @@ export default function SettingsPage() {
         .eq('id', user.id);
       
       if (error) throw error;
+      
+      useAuthStore.getState().setProfile({ ...profile, full_name: fullName });
       toast.success("Profile updated successfully");
       // Optional: Refresh session/profile
     } catch (e) {
@@ -143,7 +145,7 @@ export default function SettingsPage() {
             </button>
           ))}
           
-          <div className="mt-6 p-4 border border-dashed border-zinc-200 rounded-lg">
+          <div className="mt-6 p-4 border border-dashed border-zinc-200 rounded-none">
              <div className="text-[9px] font-mono uppercase text-zinc-400 mb-2">Supabase_Link</div>
              <div className="flex items-center gap-2">
                 <div className={`w-2 h-2 rounded-full ${
@@ -162,7 +164,7 @@ export default function SettingsPage() {
 
         <div className="md:col-span-3 space-y-6">
           {activeTab === 'Profile' && (
-            <Card className="border border-zinc-200 rounded-xl shadow-none bg-white">
+            <Card className="border border-zinc-200 rounded-none shadow-none bg-white">
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg font-bold">User Identity</CardTitle>
                 <CardDescription className="text-xs font-mono uppercase tracking-tight">Modify your system credentials and public alias</CardDescription>
@@ -203,7 +205,7 @@ export default function SettingsPage() {
           )}
 
           {activeTab === 'User Admin' && isSuperAdmin && (
-            <Card className="border border-zinc-200 rounded-xl shadow-none bg-white">
+            <Card className="border border-zinc-200 rounded-none shadow-none bg-white">
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg font-bold">Pending Approvals</CardTitle>
                 <CardDescription className="text-xs font-mono uppercase tracking-tight">Authorize new nodes seeking system access</CardDescription>
@@ -263,7 +265,7 @@ export default function SettingsPage() {
             </Card>
           )}
 
-          <Card className="border border-zinc-200 rounded-xl shadow-none bg-zinc-50">
+          <Card className="border border-zinc-200 rounded-none shadow-none bg-zinc-50">
              <CardHeader className="pb-2">
                 <div className="flex items-center gap-2">
                   <Terminal className="w-4 h-4 text-zinc-500" />

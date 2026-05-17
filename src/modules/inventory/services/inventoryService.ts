@@ -12,11 +12,12 @@ export const inventoryService = {
 
     return (itemsData || []).map(item => {
       const stockQty = item.stocks?.reduce((acc: number, s: any) => acc + (s.quantity || 0), 0) || 0;
+      const minStock = item.min_stock || 10;
       return {
         ...item,
         category: item.type,
         stock: stockQty,
-        status: stockQty < 10 ? 'low_stock' : 'in_stock'
+        status: stockQty <= minStock ? (stockQty === 0 ? 'out_of_stock' : 'low_stock') : 'in_stock'
       };
     }) as InventoryItem[];
   },
@@ -88,7 +89,7 @@ export const inventoryService = {
       ...newItem,
       category: newItem.type,
       stock: item.stock || 0,
-      status: (item.stock || 0) < 10 ? 'low_stock' : 'in_stock'
+      status: (item.stock || 0) <= (item.min_stock || 10) ? 'low_stock' : 'in_stock'
     } as InventoryItem;
   },
 
@@ -124,7 +125,7 @@ export const inventoryService = {
       ...itemData,
       category: itemData.type,
       stock: newStock,
-      status: newStock < 10 ? 'low_stock' : 'in_stock'
+      status: newStock <= (minStock || 10) ? 'low_stock' : 'in_stock'
     } as InventoryItem;
   },
 
@@ -166,12 +167,13 @@ export const inventoryService = {
     }
 
     const stockQty = data.stocks?.reduce((acc: number, s: any) => acc + (s.quantity || 0), 0) || 0;
+    const minStock = data.min_stock || 10;
 
     return {
       ...data,
       category: data.type,
       stock: stockQty,
-      status: stockQty < 10 ? 'low_stock' : 'in_stock'
+      status: stockQty <= minStock ? 'low_stock' : 'in_stock'
     } as InventoryItem;
   }
 };

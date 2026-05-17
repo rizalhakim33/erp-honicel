@@ -138,7 +138,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Recent Work Orders */}
         <motion.div variants={item} className="lg:col-span-8">
-          <Card className="border border-zinc-200 rounded-xl shadow-none bg-white overflow-hidden flex flex-col h-full">
+          <Card className="border border-zinc-200 rounded-none shadow-none bg-white overflow-hidden flex flex-col h-full">
             <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-zinc-100 bg-zinc-50/50">
               <CardTitle className="text-xs font-bold uppercase tracking-wider text-zinc-700">Active Production Line</CardTitle>
               <Button asChild variant="ghost" size="sm" className="text-zinc-600 hover:text-zinc-900 font-mono text-[10px] uppercase tracking-tight">
@@ -170,10 +170,10 @@ export default function DashboardPage() {
                           </TableCell>
                           <TableCell className="py-4">
                             <span className={cn(
-                              "px-2 py-0.5 text-[10px] rounded font-bold uppercase",
-                              wo.status === 'completed' ? "bg-green-100 text-green-700" : 
-                              wo.status === 'in_progress' ? "bg-blue-100 text-blue-700" : 
-                              wo.status === 'cancelled' ? "bg-red-100 text-red-700" : "bg-zinc-100 text-zinc-700"
+                               "px-2 py-0.5 text-[10px] rounded font-bold uppercase",
+                               wo.status === 'completed' ? "bg-green-100 text-green-700" : 
+                               wo.status === 'in_progress' ? "bg-blue-100 text-blue-700" : 
+                               wo.status === 'cancelled' ? "bg-red-100 text-red-700" : "bg-zinc-100 text-zinc-700"
                             )}>
                               {wo.status.replace('_', ' ')}
                             </span>
@@ -202,7 +202,7 @@ export default function DashboardPage() {
 
         {/* Asset Health Monitoring */}
         <motion.div variants={item} className="lg:col-span-4">
-          <Card className="border border-zinc-200 rounded-xl shadow-none bg-white h-full flex flex-col">
+          <Card className="border border-zinc-200 rounded-none shadow-none bg-white h-full flex flex-col">
             <CardHeader className="pb-4 border-b border-zinc-50 bg-zinc-50/30">
               <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 font-mono">Asset Health Monitoring</CardTitle>
             </CardHeader>

@@ -34,7 +34,7 @@ export function KPICard({
 }: KPICardProps) {
   const content = (
     <Card className={cn(
-      "overflow-hidden border border-zinc-200 rounded-xl shadow-none bg-white",
+      "overflow-hidden border border-zinc-200 rounded-none shadow-none bg-white",
       href && "hover:border-zinc-300 hover:bg-zinc-50/50 transition-all cursor-pointer"
     )}>
       <CardContent className="p-4">

@@ -68,7 +68,7 @@ export default function PurchasingPage() {
         </div>
         
         <TabsContent value="po" className="mt-0 outline-none">
-          <Card className="border border-zinc-200 rounded-xl shadow-none bg-white overflow-hidden">
+          <Card className="border border-zinc-200 rounded-none shadow-none bg-white overflow-hidden">
             <CardHeader className="bg-zinc-50/50 border-b border-zinc-100 p-4">
                <div className="flex items-center justify-between">
                   <div className="relative max-w-sm w-full">
@@ -106,7 +106,7 @@ export default function PurchasingPage() {
                         <TableCell className="text-right font-mono text-xs text-zinc-900">${po.total_amount?.toLocaleString()}</TableCell>
                         <TableCell className="text-right">
                           <span className={cn(
-                            "px-2 py-0.5 text-[9px] rounded-sm font-bold uppercase tracking-tighter",
+                            "px-2 py-0.5 text-[9px] rounded-none font-bold uppercase tracking-tighter",
                             po.status === 'received' ? "bg-green-100 text-green-700" : po.status === 'pending' ? "bg-amber-100 text-amber-700" : "bg-zinc-100 text-zinc-500"
                           )}>
                             {po.status}
@@ -168,10 +168,10 @@ export default function PurchasingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {suppliers.length > 0 ? (
               suppliers.map((v) => (
-                <Card key={v.id} className="border border-zinc-200 rounded-xl shadow-none bg-white">
+                <Card key={v.id} className="border border-zinc-200 rounded-none shadow-none bg-white">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-8 h-8 bg-zinc-100 rounded flex items-center justify-center">
+                      <div className="w-8 h-8 bg-zinc-100 rounded-none flex items-center justify-center">
                         <Building2 className="w-4 h-4 text-zinc-500" />
                       </div>
                       <div>
@@ -180,7 +180,7 @@ export default function PurchasingPage() {
                       </div>
                     </div>
                     <div className="flex items-center justify-between border-t border-zinc-50 pt-3">
-                      <span className="text-[9px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold uppercase">{v.category || 'Vendor'}</span>
+                      <span className="text-[9px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-none font-bold uppercase">{v.category || 'Vendor'}</span>
                       <span className="text-[9px] font-mono text-zinc-400">Rating: {v.performance_rating || 'N/A'}%</span>
                     </div>
                   </CardContent>
@@ -192,7 +192,7 @@ export default function PurchasingPage() {
           </div>
         </TabsContent>
         <TabsContent value="receiving" className="mt-0 outline-none">
-          <Card className="border border-zinc-200 rounded-xl shadow-none bg-white overflow-hidden">
+          <Card className="border border-zinc-200 rounded-none shadow-none bg-white overflow-hidden">
             <CardHeader className="bg-zinc-50/50 border-b border-zinc-100 p-4">
                <CardTitle className="text-xs font-bold uppercase tracking-widest text-zinc-500">Inbound_Logistics_Queue</CardTitle>
             </CardHeader>

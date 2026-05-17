@@ -194,7 +194,7 @@ export function ItemTable({ filterType, title }: { filterType?: string; title?: 
         return (
           <div className="text-right">
             <span className={cn(
-              "px-2 py-0.5 text-[10px] rounded font-bold uppercase",
+              "px-2 py-0.5 text-[10px] rounded-none font-bold uppercase",
               status === 'in_stock' ? "bg-green-100 text-green-700" : status === 'low_stock' ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"
             )}>
               {status.replace('_', ' ')}
@@ -337,7 +337,7 @@ export function ItemTable({ filterType, title }: { filterType?: string; title?: 
         </div>
       </div>
       
-      <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden shadow-none">
+      <div className="rounded-none border border-zinc-200 bg-white overflow-hidden shadow-none">
         <Table>
           <TableHeader className="bg-zinc-50 border-b border-zinc-100">
             {table.getHeaderGroups().map((headerGroup) => (
@@ -393,7 +393,7 @@ export function ItemTable({ filterType, title }: { filterType?: string; title?: 
             size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-            className="rounded-full font-mono text-[10px] uppercase"
+            className="rounded-none font-mono text-[10px] uppercase"
           >
             Previous
           </Button>
@@ -402,7 +402,7 @@ export function ItemTable({ filterType, title }: { filterType?: string; title?: 
             size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
-            className="rounded-full font-mono text-[10px] uppercase"
+            className="rounded-none font-mono text-[10px] uppercase"
           >
             Next
           </Button>

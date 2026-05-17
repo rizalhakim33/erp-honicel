@@ -64,6 +64,18 @@ export const productionService = {
     return data as WorkOrder;
   },
 
+  async updateWOQuantity(id: string, quantity: number) {
+    const { data, error } = await supabase
+      .from('work_orders')
+      .update({ produced_quantity: quantity })
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data as WorkOrder;
+  },
+
   async deleteWorkOrder(id: string) {
     // Delete related QC logs first to satisfy foreign key constraints
     await supabase

@@ -128,13 +128,13 @@ export default function ProductionPage() {
               workOrders.map((wo) => {
                 const progress = Math.round((wo.produced_quantity / wo.target_quantity) * 100) || 0;
                 return (
-                  <Card key={wo.id} className="border border-zinc-200 rounded-xl shadow-none bg-white overflow-hidden">
+                  <Card key={wo.id} className="border border-zinc-200 rounded-none shadow-none bg-white overflow-hidden">
                     <CardContent className="p-0 flex flex-col md:flex-row items-center">
                        <div className="p-6 border-r border-zinc-100 min-w-[200px] bg-zinc-50/50">
                           <div className="text-[10px] font-mono text-zinc-400 mb-1">REFERENCE_ID</div>
                           <div className="text-sm font-bold text-zinc-900">{wo.wo_number}</div>
                           <div className={cn(
-                            "mt-3 text-[9px] font-bold uppercase px-2 py-0.5 rounded-sm inline-block",
+                            "mt-3 text-[9px] font-bold uppercase px-2 py-0.5 rounded-none inline-block",
                             wo.status === 'in_progress' ? "bg-blue-100 text-blue-700" : wo.status === 'completed' ? "bg-green-100 text-green-700" : "bg-zinc-100 text-zinc-600"
                           )}>
                             Status: {wo.status.replace('_', ' ')}
@@ -206,7 +206,7 @@ export default function ProductionPage() {
                 );
               })
             ) : (
-              <div className="p-12 text-center text-zinc-400 border border-zinc-100 rounded-xl bg-zinc-50/30">
+              <div className="p-12 text-center text-zinc-400 border border-zinc-100 rounded-none bg-zinc-50/30">
                 <p className="font-mono text-[10px] uppercase italic">No active production streams detected</p>
                 <Button 
                   onClick={() => openDialog('wo')}
@@ -221,7 +221,7 @@ export default function ProductionPage() {
         </TabsContent>
 
         <TabsContent value="bom" className="mt-0 outline-none">
-          <Card className="border border-zinc-200 rounded-xl shadow-none bg-white">
+          <Card className="border border-zinc-200 rounded-none shadow-none bg-white">
             <CardHeader className="border-b border-zinc-100 p-4 bg-zinc-50/50">
                <CardTitle className="text-xs font-bold uppercase tracking-widest text-zinc-500">Bill of Materials - Structural Blueprint</CardTitle>
             </CardHeader>
@@ -264,7 +264,7 @@ export default function ProductionPage() {
         </TabsContent>
         <TabsContent value="efficiency" className="mt-0 outline-none">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="border border-zinc-200 rounded-xl shadow-none bg-white overflow-hidden">
+            <Card className="border border-zinc-200 rounded-none shadow-none bg-white overflow-hidden">
                <CardHeader className="border-b border-zinc-100 p-4 bg-zinc-50/50">
                   <CardTitle className="text-xs font-bold uppercase tracking-widest text-zinc-500">Utilization_Matrix</CardTitle>
                </CardHeader>
@@ -280,7 +280,7 @@ export default function ProductionPage() {
                               <span className="text-zinc-600">{m.name} ({m.status})</span>
                               <span className="text-zinc-900 font-bold">{rate}%</span>
                             </div>
-                            <div className="w-full bg-zinc-100 h-1 rounded-full overflow-hidden">
+                            <div className="w-full bg-zinc-100 h-1 rounded-none overflow-hidden">
                               <div 
                                 className={cn(
                                   "h-full transition-all duration-500",
@@ -307,7 +307,7 @@ export default function ProductionPage() {
                   </Button>
                </CardContent>
             </Card>
-            <Card className="border border-zinc-200 rounded-xl shadow-none bg-white overflow-hidden">
+            <Card className="border border-zinc-200 rounded-none shadow-none bg-white overflow-hidden">
                <CardHeader className="border-b border-zinc-100 p-4 bg-zinc-50/50">
                   <CardTitle className="text-xs font-bold uppercase tracking-widest text-zinc-500">OEE_Analytics (Overall_Equipment_Effectiveness)</CardTitle>
                </CardHeader>
