@@ -9,6 +9,7 @@ interface InventoryState {
   fetchItems: () => Promise<void>;
   addItem: (item: Omit<InventoryItem, 'id' | 'status'>) => Promise<void>;
   updateStock: (id: string, newStock: number, minStock: number) => Promise<void>;
+  updateItem: (id: string, item: Partial<Omit<InventoryItem, 'id' | 'status'>>) => Promise<void>;
   deleteItem: (id: string) => Promise<void>;
 }
 
@@ -45,6 +46,20 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
       });
     } catch (error: any) {
       set({ error: error.message });
+    }
+  },
+
+  updateItem: async (id, item) => {
+    set({ loading: true, error: null });
+    try {
+      const updatedItem = await inventoryService.updateItem(id, item);
+      set({
+        items: get().items.map((i) => (i.id === id ? updatedItem : i)),
+        loading: false
+      });
+    } catch (error: any) {
+      set({ error: error.message, loading: false });
+      throw error;
     }
   },
 

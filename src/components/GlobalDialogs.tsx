@@ -11,13 +11,14 @@ import { AddQCLogDialog } from '@/modules/qc/components/AddQCLogDialog';
 import { AddProductDialog } from '@/modules/production/components/AddProductDialog';
 
 export function GlobalDialogs() {
-  const { openDialogs, close } = useDialogStore();
+  const { openDialogs, close, dialogData } = useDialogStore();
 
   return (
     <>
       <AddItemDialog 
         open={openDialogs.item} 
         onOpenChange={(open) => !open && close('item')} 
+        item={dialogData.item}
       />
       <AddProductDialog 
         open={openDialogs.product} 

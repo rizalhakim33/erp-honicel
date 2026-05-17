@@ -63,5 +63,41 @@ export const inventoryService = {
       .eq('id', id);
     
     if (error) throw error;
+  },
+
+  async updateItem(id: string, item: Partial<Omit<InventoryItem, 'id' | 'status'>>) {
+    let itemType: string | undefined = undefined;
+    if (item.category) {
+      const cat = item.category.toLowerCase();
+      if (cat.includes('raw')) itemType = 'raw_material';
+      else if (cat.includes('finished')) itemType = 'finished_good';
+      else if (cat.includes('semi')) itemType = 'semi_finished';
+      else if (cat.includes('spare') || cat.includes('part') || cat.includes('asset')) itemType = 'sparepart';
+    }
+
+    const { data, error } = await supabase
+      .from('items')
+      .update({
+        name: item.name,
+        sku: item.sku,
+        unit: item.unit,
+        type: itemType,
+        min_stock: item.min_stock
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Supabase Error (updateItem):', error);
+      throw error;
+    }
+
+    return {
+      ...data,
+      category: data.type,
+      stock: item.stock || 0,
+      status: 'in_stock'
+    } as InventoryItem;
   }
 };

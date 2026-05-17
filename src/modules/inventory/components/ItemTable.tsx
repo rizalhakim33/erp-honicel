@@ -38,6 +38,7 @@ import { Badge } from "@/components/ui/badge"
 
 import { AddItemDialog } from "./AddItemDialog"
 import { useInventoryStore } from "../store/useInventoryStore"
+import { useDialogStore } from "@/store/useDialogStore"
 import { toast } from "sonner"
 
 export type InventoryItem = {
@@ -124,12 +125,12 @@ export const columns: ColumnDef<InventoryItem>[] = [
 ]
 
 export function ItemTable({ filterType, title }: { filterType?: string; title?: string }) {
+  const { open: openDialog } = useDialogStore()
   const { items, fetchItems, deleteItem } = useInventoryStore()
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
-  const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false)
 
   React.useEffect(() => {
     fetchItems()
@@ -156,26 +157,39 @@ export function ItemTable({ filterType, title }: { filterType?: string; title?: 
                   <span className="sr-only">Open menu</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-white border-zinc-200">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => {
-                  if (typeof navigator !== 'undefined' && navigator.clipboard) {
-                    navigator.clipboard.writeText(row.original.sku);
-                    toast.success("SKU copied to clipboard");
-                  }
-                }}>
+              <DropdownMenuContent align="end" className="bg-white border-zinc-200 shadow-xl z-50">
+                <DropdownMenuLabel className="font-mono text-[9px] uppercase text-zinc-400 p-2">Actions</DropdownMenuLabel>
+                <DropdownMenuItem 
+                  onClick={() => openDialog('item', row.original)} 
+                  className="font-mono text-[10px] uppercase cursor-pointer p-2 hover:bg-zinc-100 transition-colors"
+                >
+                  Edit Registry
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => {
+                    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                      navigator.clipboard.writeText(row.original.sku);
+                      toast.success("SKU copied to clipboard");
+                    }
+                  }} 
+                  className="font-mono text-[10px] uppercase cursor-pointer p-2 hover:bg-zinc-100 transition-colors"
+                >
                   Copy SKU
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>View details</DropdownMenuItem>
-                <DropdownMenuItem onClick={async () => {
-                  try {
-                    await deleteItem(row.original.id)
-                    toast.success("Item removed from registry")
-                  } catch (e) {
-                    toast.error("Failed to delete item")
-                  }
-                }} className="text-red-600 focus:text-red-600">
+                <DropdownMenuSeparator className="bg-zinc-100" />
+                <DropdownMenuItem 
+                  onClick={async () => {
+                    if (confirm("Are you sure you want to delete this asset?")) {
+                      try {
+                        await deleteItem(row.original.id)
+                        toast.success("Item removed from registry")
+                      } catch (e) {
+                        toast.error("Failed to delete item")
+                      }
+                    }
+                  }} 
+                  className="text-red-600 focus:text-red-600 font-mono text-[10px] uppercase cursor-pointer p-2 hover:bg-red-50 transition-colors"
+                >
                   Delete connection
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -214,24 +228,22 @@ export function ItemTable({ filterType, title }: { filterType?: string; title?: 
             placeholder="Search SKUs or names..."
             value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
             onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)}
-            className="max-w-sm rounded-none bg-white border-zinc-200 font-mono text-xs"
+            className="max-w-sm rounded-none bg-white border-zinc-200 font-mono text-xs h-9"
           />
-          <Button variant="outline" size="sm" className="rounded-none gap-2 font-mono text-[10px] uppercase">
+          <Button variant="outline" size="sm" className="rounded-none gap-2 font-mono text-[10px] uppercase border-zinc-200 h-9">
             <Filter className="w-4 h-4" /> Filter
           </Button>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="rounded-none gap-2 text-zinc-600 font-mono text-[10px] uppercase">
+          <Button variant="outline" size="sm" className="rounded-none gap-2 text-zinc-600 font-mono text-[10px] uppercase border-zinc-200 h-9">
             <Download className="w-4 h-4" /> Export_Data
           </Button>
-          <Button onClick={() => setIsAddDialogOpen(true)} size="sm" className="rounded-none gap-2 bg-zinc-900 hover:bg-zinc-800 font-mono text-[10px] uppercase">
+          <Button onClick={() => openDialog('item')} size="sm" className="rounded-none gap-2 bg-zinc-900 hover:bg-zinc-800 font-mono text-[10px] uppercase h-9">
             <Package className="w-4 h-4" /> Add_Asset
           </Button>
         </div>
       </div>
       
-      <AddItemDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
-
       <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden shadow-none">
         <Table>
           <TableHeader className="bg-zinc-50 border-b border-zinc-100">
@@ -278,7 +290,7 @@ export function ItemTable({ filterType, title }: { filterType?: string; title?: 
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-slate-500 font-medium">
+        <div className="flex-1 text-sm text-zinc-500 font-medium">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
           {table.getFilteredRowModel().rows.length} row(s) selected.
         </div>
@@ -288,7 +300,7 @@ export function ItemTable({ filterType, title }: { filterType?: string; title?: 
             size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
-            className="rounded-full"
+            className="rounded-full font-mono text-[10px] uppercase"
           >
             Previous
           </Button>
@@ -297,7 +309,7 @@ export function ItemTable({ filterType, title }: { filterType?: string; title?: 
             size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
-            className="rounded-full"
+            className="rounded-full font-mono text-[10px] uppercase"
           >
             Next
           </Button>

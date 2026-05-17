@@ -4,7 +4,8 @@ type DialogType = 'item' | 'bom' | 'machine' | 'supplier' | 'wo' | 'po' | 'maint
 
 interface DialogState {
   openDialogs: Record<DialogType, boolean>;
-  open: (type: DialogType) => void;
+  dialogData: Record<string, any>;
+  open: (type: DialogType, data?: any) => void;
   close: (type: DialogType) => void;
   toggle: (type: DialogType) => void;
 }
@@ -21,11 +22,14 @@ export const useDialogStore = create<DialogState>((set) => ({
     qc: false,
     product: false,
   },
-  open: (type) => set((state) => ({ 
-    openDialogs: { ...state.openDialogs, [type]: true } 
+  dialogData: {},
+  open: (type, data) => set((state) => ({ 
+    openDialogs: { ...state.openDialogs, [type]: true },
+    dialogData: { ...state.dialogData, [type]: data || null }
   })),
   close: (type) => set((state) => ({ 
-    openDialogs: { ...state.openDialogs, [type]: false } 
+    openDialogs: { ...state.openDialogs, [type]: false },
+    dialogData: { ...state.dialogData, [type]: null }
   })),
   toggle: (type) => set((state) => ({ 
     openDialogs: { ...state.openDialogs, [type]: !state.openDialogs[type] } 
