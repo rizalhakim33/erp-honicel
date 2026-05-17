@@ -95,5 +95,34 @@ export const productionService = {
       .order('name');
     if (error) throw error;
     return data;
+  },
+
+  async createMachine(machine: { name: string, code: string, type: string }) {
+    const { data, error } = await supabase
+      .from('machines')
+      .insert([machine])
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async updateMachine(id: string, machine: Partial<{ name: string, code: string, type: string, status: string }>) {
+    const { data, error } = await supabase
+      .from('machines')
+      .update(machine)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async deleteMachine(id: string) {
+    const { error } = await supabase
+      .from('machines')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
   }
 };

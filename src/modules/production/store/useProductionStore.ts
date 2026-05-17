@@ -10,6 +10,9 @@ interface ProductionState {
   fetchWorkOrders: () => Promise<void>;
   fetchBoms: () => Promise<void>;
   fetchMachines: () => Promise<void>;
+  createMachine: (machine: { name: string, code: string, type: string }) => Promise<void>;
+  updateMachine: (id: string, machine: Partial<{ name: string, code: string, type: string, status: string }>) => Promise<void>;
+  deleteMachine: (id: string) => Promise<void>;
   createWorkOrder: (wo: Omit<WorkOrder, 'id' | 'wo_number' | 'status' | 'produced_quantity'>) => Promise<void>;
   updateWOStatus: (id: string, status: WorkOrder['status']) => Promise<void>;
   deleteWorkOrder: (id: string) => Promise<void>;
@@ -47,6 +50,38 @@ export const useProductionStore = create<ProductionState>((set, get) => ({
       set({ machines });
     } catch (error: any) {
       set({ error: error.message });
+    }
+  },
+
+  createMachine: async (machine) => {
+    try {
+      const newMachine = await productionService.createMachine(machine);
+      set({ machines: [newMachine, ...get().machines] });
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    }
+  },
+
+  updateMachine: async (id, machine) => {
+    try {
+      const updated = await productionService.updateMachine(id, machine);
+      set({
+        machines: get().machines.map(m => m.id === id ? { ...m, ...updated } : m)
+      });
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    }
+  },
+
+  deleteMachine: async (id) => {
+    try {
+      await productionService.deleteMachine(id);
+      set({ machines: get().machines.filter(m => m.id !== id) });
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
     }
   },
 

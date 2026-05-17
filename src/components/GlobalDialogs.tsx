@@ -38,6 +38,7 @@ export function GlobalDialogs() {
       <AddMachineDialog 
         open={openDialogs.machine} 
         onOpenChange={(open) => !open && close('machine')} 
+        machine={dialogData.machine}
       />
       <AddSupplierDialog 
         open={openDialogs.supplier} 

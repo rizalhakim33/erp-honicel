@@ -20,11 +20,14 @@ import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { useAuthStore } from '@/modules/auth/store/useAuthStore';
 import { Users, CheckCircle, XCircle } from 'lucide-react';
 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 export default function SettingsPage() {
   const { user, profile, role } = useAuthStore();
   const [dbStatus, setDbStatus] = React.useState<'checking' | 'connected' | 'error' | 'unconfigured'>('checking');
   const [activeTab, setActiveTab] = React.useState('Profile');
   const [pendingUsers, setPendingUsers] = React.useState<any[]>([]);
+  const [rolesList, setRolesList] = React.useState<any[]>([]);
   const isSuperAdmin = user?.email === 'rizal.h33@gmail.com';
 
   React.useEffect(() => {
@@ -41,6 +44,21 @@ export default function SettingsPage() {
         if (isSuperAdmin) {
             const { data: pending } = await supabase.from('profiles').select('*').eq('is_active', false);
             if (pending) setPendingUsers(pending);
+
+            const { data: rolesData } = await supabase.from('roles').select('*');
+            if (rolesData) {
+                setRolesList(rolesData);
+                
+                // Ensure required roles exist
+                const requiredRoles = ['admin', 'maintenance_technician'];
+                for (const rName of requiredRoles) {
+                    if (!rolesData.find(r => r.name === rName)) {
+                        await supabase.from('roles').insert([{ name: rName, description: `System ${rName} role` }]);
+                        const { data: updatedRoles } = await supabase.from('roles').select('*');
+                        if (updatedRoles) setRolesList(updatedRoles);
+                    }
+                }
+            }
         }
       } catch (e) {
         console.error('Connection check failed:', e);
@@ -50,14 +68,43 @@ export default function SettingsPage() {
     checkConn();
   }, [isSuperAdmin]);
 
-  const handleApprove = async (userId: string) => {
+  const handleApprove = async (userId: string, roleId?: string) => {
     try {
-        const { error } = await supabase.from('profiles').update({ is_active: true }).eq('id', userId);
+        const updateData: any = { is_active: true };
+        if (roleId) updateData.role_id = roleId;
+        
+        const { error } = await supabase.from('profiles').update(updateData).eq('id', userId);
         if (error) throw error;
         toast.success('Access authorized for node');
         setPendingUsers(prev => prev.filter(u => u.id !== userId));
     } catch (e) {
         toast.error('Approval sequence failed');
+    }
+  };
+
+  const [fullName, setFullName] = React.useState(profile?.full_name || '');
+  const [bio, setBio] = React.useState(`Role: ${role || 'Viewer'}`);
+
+  React.useEffect(() => {
+    if (profile) {
+      setFullName(profile.full_name || '');
+      setBio(`Role: ${role || 'Viewer'}`);
+    }
+  }, [profile, role]);
+
+  const handleUpdateProfile = async () => {
+    if (!user) return;
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ full_name: fullName })
+        .eq('id', user.id);
+      
+      if (error) throw error;
+      toast.success("Profile updated successfully");
+      // Optional: Refresh session/profile
+    } catch (e) {
+      toast.error("Failed to update profile");
     }
   };
 
@@ -124,20 +171,28 @@ export default function SettingsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Full_Name</Label>
-                    <Input defaultValue={profile?.full_name || 'Anonymous User'} className="rounded-none border-zinc-200" />
+                    <Input 
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      className="rounded-none border-zinc-200" 
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Registry_Email</Label>
-                    <Input defaultValue={user?.email || ''} readOnly className="rounded-none border-zinc-200 bg-zinc-50" />
+                    <Input value={user?.email || ''} readOnly className="rounded-none border-zinc-200 bg-zinc-50" />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Bio_Signature</Label>
-                  <Input defaultValue={`Role: ${role || 'Viewer'}`} className="rounded-none border-zinc-200" />
+                  <Input 
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    className="rounded-none border-zinc-200" 
+                  />
                 </div>
                 <div className="pt-4 flex justify-end">
                   <Button 
-                    onClick={() => toast.success("Changes committed to central registry")}
+                    onClick={handleUpdateProfile}
                     className="bg-zinc-900 text-white hover:bg-zinc-800 text-[10px] font-bold uppercase tracking-widest rounded-none px-6"
                   >
                     COMMIT_CHANGES
@@ -156,30 +211,47 @@ export default function SettingsPage() {
               <CardContent>
                 {pendingUsers.length > 0 ? (
                     <div className="space-y-4">
-                        {pendingUsers.map((u) => (
-                            <div key={u.id} className="flex items-center justify-between p-4 border border-zinc-100 bg-zinc-50/50 rounded-sm">
-                                <div>
-                                    <div className="text-sm font-bold text-zinc-900">{u.full_name}</div>
-                                    <div className="text-[10px] font-mono text-zinc-500 uppercase">{u.email}</div>
+                        {pendingUsers.map((u) => {
+                            const [selectedRoleId, setSelectedRoleId] = React.useState<string | undefined>(u.role_id);
+                            return (
+                                <div key={u.id} className="flex items-center justify-between p-4 border border-zinc-100 bg-zinc-50/50 rounded-sm">
+                                    <div className="flex-1">
+                                        <div className="text-sm font-bold text-zinc-900">{u.full_name}</div>
+                                        <div className="text-[10px] font-mono text-zinc-500 uppercase">{u.email}</div>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <Select value={selectedRoleId} onValueChange={setSelectedRoleId}>
+                                            <SelectTrigger className="w-[180px] h-8 text-[10px] font-mono uppercase rounded-none border-zinc-200">
+                                                <SelectValue placeholder="Assign Role" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {rolesList.map(r => (
+                                                    <SelectItem key={r.id} value={r.id} className="text-[10px] font-mono uppercase">
+                                                        {r.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <div className="flex gap-2">
+                                            <Button 
+                                                size="sm" 
+                                                onClick={() => handleApprove(u.id, selectedRoleId)}
+                                                className="bg-zinc-900 text-white rounded-none h-8 text-[9px] font-mono uppercase"
+                                            >
+                                                <CheckCircle className="w-3 h-3 mr-1" /> APPROVE
+                                            </Button>
+                                            <Button 
+                                                size="sm" 
+                                                variant="outline"
+                                                className="border-zinc-200 text-zinc-500 hover:text-red-600 rounded-none h-8 text-[9px] font-mono uppercase"
+                                            >
+                                                <XCircle className="w-3 h-3 mr-1" /> REJECT
+                                            </Button>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="flex gap-2">
-                                    <Button 
-                                        size="sm" 
-                                        onClick={() => handleApprove(u.id)}
-                                        className="bg-zinc-900 text-white rounded-none h-8 text-[9px] font-mono uppercase"
-                                    >
-                                        <CheckCircle className="w-3 h-3 mr-1" /> APPROVE
-                                    </Button>
-                                    <Button 
-                                        size="sm" 
-                                        variant="outline"
-                                        className="border-zinc-200 text-zinc-500 hover:text-red-600 rounded-none h-8 text-[9px] font-mono uppercase"
-                                    >
-                                        <XCircle className="w-3 h-3 mr-1" /> REJECT
-                                    </Button>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 ) : (
                     <div className="py-12 text-center">

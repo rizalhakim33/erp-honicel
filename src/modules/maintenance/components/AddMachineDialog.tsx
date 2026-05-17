@@ -41,42 +41,57 @@ const formSchema = z.object({
 interface AddMachineDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess?: () => void;
+  machine?: any | null;
 }
 
-export function AddMachineDialog({ open, onOpenChange, onSuccess }: AddMachineDialogProps) {
+export function AddMachineDialog({ open, onOpenChange, machine }: AddMachineDialogProps) {
   const [loading, setLoading] = React.useState(false);
-  const { fetchMachines } = useProductionStore();
+  const { fetchMachines, createMachine, updateMachine } = useProductionStore();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      code: `MAC-${Math.floor(100 + Math.random() * 900)}`,
+      code: "",
       type: "Production",
       status: "idle",
     },
   });
 
+  React.useEffect(() => {
+    if (machine) {
+      form.reset({
+        name: machine.name,
+        code: machine.code,
+        type: machine.type || "Production",
+        status: machine.status || "idle",
+      });
+    } else {
+      form.reset({
+        name: "",
+        code: `MAC-${Math.floor(100 + Math.random() * 900)}`,
+        type: "Production",
+        status: "idle",
+      });
+    }
+  }, [machine, form, open]);
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('machines')
-        .insert([values]);
-      
-      if (error) {
-        console.error('Supabase Error (Register Asset):', error);
-        throw error;
+      if (machine) {
+        await updateMachine(machine.id, values);
+        toast.success("Machine asset updated");
+      } else {
+        await createMachine(values);
+        toast.success("Machine registered successfully");
       }
-
-      toast.success("Machine registered successfully");
+      
       await fetchMachines();
       onOpenChange(false);
       form.reset();
-      onSuccess?.();
     } catch (error) {
-      toast.error("Failed to register machine asset");
+      toast.error(machine ? "Failed to update asset" : "Failed to register machine asset");
     } finally {
       setLoading(false);
     }
@@ -86,9 +101,9 @@ export function AddMachineDialog({ open, onOpenChange, onSuccess }: AddMachineDi
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] rounded-none border-zinc-200">
         <DialogHeader>
-          <DialogTitle className="text-sm font-bold uppercase tracking-widest font-mono">Register_New_Asset</DialogTitle>
+          <DialogTitle className="text-sm font-bold uppercase tracking-widest font-mono">{machine ? 'Modify_Asset_Record' : 'Register_New_Asset'}</DialogTitle>
           <DialogDescription className="text-[10px] font-mono uppercase">
-            Add a new machine to the facility directory
+            {machine ? 'Update existing facility asset details' : 'Add a new machine to the facility directory'}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
