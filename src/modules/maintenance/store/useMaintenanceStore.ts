@@ -8,6 +8,7 @@ interface MaintenanceState {
   fetchLogs: () => Promise<void>;
   createLog: (log: Omit<MaintenanceLog, 'id'>) => Promise<void>;
   updateLogStatus: (id: string, status: MaintenanceLog['status']) => Promise<void>;
+  updateLog: (id: string, log: Partial<MaintenanceLog>) => Promise<void>;
   deleteLog: (id: string) => Promise<void>;
 }
 
@@ -42,6 +43,16 @@ export const useMaintenanceStore = create<MaintenanceState>((set, get) => ({
       await maintenanceService.updateLogStatus(id, status);
       const logs = get().logs.map(l => l.id === id ? { ...l, status } : l);
       set({ logs });
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    }
+  },
+
+  updateLog: async (id, log) => {
+    try {
+      await maintenanceService.updateLog(id, log);
+      set({ logs: get().logs.map(l => l.id === id ? { ...l, ...log } : l) });
     } catch (error: any) {
       set({ error: error.message });
       throw error;

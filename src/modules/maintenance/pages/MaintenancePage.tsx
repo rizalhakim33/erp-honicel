@@ -5,9 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Wrench, 
   Clock, 
-  AlertTriangle, 
-  CheckCircle2, 
-  Calendar,
   Settings2,
   HardDrive,
   Trash2
@@ -133,7 +130,7 @@ export default function MaintenancePage() {
                         <Trash2 className="w-4 h-4" />
                       </Button>
                       <Button 
-                        onClick={() => toast.info(`Accessing settings for ${log.id}...`)}
+                        onClick={() => openDialog('maintenance', log)}
                         variant="ghost" size="sm" className="h-8 w-8 p-0"
                       >
                         <Settings2 className="w-4 h-4 text-zinc-400" />
@@ -149,34 +146,6 @@ export default function MaintenancePage() {
         </Card>
 
         <div className="space-y-6">
-          <Card className="border border-zinc-200 rounded-xl shadow-none bg-zinc-900 text-white">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">System Logs</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 text-[10px] font-mono">
-                  <CheckCircle2 className="w-3 h-3 text-green-500" />
-                  <span className="text-zinc-400">08:00 - Daily calibration complete</span>
-                </div>
-                <div className="flex items-center gap-3 text-[10px] font-mono">
-                  <AlertTriangle className="w-3 h-3 text-amber-500" />
-                  <span className="text-zinc-400">10:15 - High Temp on LINE-04</span>
-                </div>
-                <div className="flex items-center gap-3 text-[10px] font-mono">
-                  <HardDrive className="w-3 h-3 text-blue-500" />
-                  <span className="text-zinc-400">12:30 - Backup successful</span>
-                </div>
-              </div>
-              <Button 
-                onClick={() => toast.info("Opening master diagnostic logs...")}
-                variant="outline" size="sm" className="w-full border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 text-[9px] uppercase tracking-widest"
-              >
-                VIEW_ALL_LOGS
-              </Button>
-            </CardContent>
-          </Card>
-
           <Card className="border border-zinc-200 rounded-xl shadow-none bg-white">
             <CardHeader className="pb-2">
               <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Maintenance Stats</CardTitle>

@@ -62,6 +62,20 @@ export const maintenanceService = {
     return data;
   },
 
+  async updateLog(id: string, log: Partial<MaintenanceLog>) {
+    const { data, error } = await supabase
+      .from('maintenance_logs')
+      .update(log)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) {
+      console.error('Supabase Error (updateLog):', error);
+      throw error;
+    }
+    return data;
+  },
+
   async deleteLog(id: string) {
     const { error } = await supabase
       .from('maintenance_logs')

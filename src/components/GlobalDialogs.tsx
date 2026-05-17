@@ -54,6 +54,7 @@ export function GlobalDialogs() {
       <AddMaintenanceLogDialog 
         open={openDialogs.maintenance} 
         onOpenChange={(open) => !open && close('maintenance')} 
+        log={dialogData.maintenance}
       />
       <AddQCLogDialog 
         open={openDialogs.qc} 

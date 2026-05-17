@@ -32,23 +32,25 @@ import { Link } from "react-router-dom";
 import { useMaintenanceStore } from "../store/useMaintenanceStore";
 import { supabase } from "@/lib/supabase";
 import { useDialogStore } from "@/store/useDialogStore";
+import { MaintenanceLog } from "../services/maintenanceService";
 
 const formSchema = z.object({
   machine_id: z.string().min(1, "Machine index is required"),
   type: z.enum(['preventive', 'corrective']),
   description: z.string().min(5, "Description must be detailed"),
-  status: z.enum(['scheduled', 'in_progress', 'completed']),
+  status: z.enum(['scheduled', 'in_progress', 'completed', 'Scheduled', 'In Progress', 'Completed']),
 });
 
 interface AddMaintenanceLogDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  log?: MaintenanceLog | null;
 }
 
-export function AddMaintenanceLogDialog({ open, onOpenChange }: AddMaintenanceLogDialogProps) {
+export function AddMaintenanceLogDialog({ open, onOpenChange, log }: AddMaintenanceLogDialogProps) {
   const [loading, setLoading] = React.useState(false);
   const [machines, setMachines] = React.useState<{id: string, name: string}[]>([]);
-  const { createLog, fetchLogs } = useMaintenanceStore();
+  const { createLog, updateLog, fetchLogs } = useMaintenanceStore();
   const openDialog = useDialogStore(state => state.open);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -62,6 +64,24 @@ export function AddMaintenanceLogDialog({ open, onOpenChange }: AddMaintenanceLo
   });
 
   React.useEffect(() => {
+    if (log) {
+      form.reset({
+        machine_id: log.machine_id,
+        type: log.type,
+        description: log.description,
+        status: (log.status?.toLowerCase().replace(' ', '_') as any) || 'scheduled',
+      });
+    } else {
+      form.reset({
+        machine_id: "",
+        type: "preventive",
+        description: "",
+        status: "scheduled",
+      });
+    }
+  }, [log, form, open]);
+
+  React.useEffect(() => {
     async function loadMachines() {
       const { data } = await supabase.from('machines').select('id, name');
       if (data) setMachines(data);
@@ -72,18 +92,27 @@ export function AddMaintenanceLogDialog({ open, onOpenChange }: AddMaintenanceLo
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
     try {
-      await createLog({
-        machine_id: values.machine_id,
-        type: values.type,
-        description: values.description,
-        start_time: new Date().toISOString(),
-      });
-      toast.success("Maintenance log initialized");
+      if (log) {
+        await updateLog(log.id, {
+          machine_id: values.machine_id,
+          type: values.type,
+          description: values.description,
+        });
+        toast.success("Maintenance log updated");
+      } else {
+        await createLog({
+          machine_id: values.machine_id,
+          type: values.type,
+          description: values.description,
+          start_time: new Date().toISOString(),
+        });
+        toast.success("Maintenance log initialized");
+      }
       await fetchLogs();
       onOpenChange(false);
       form.reset();
     } catch (error) {
-      toast.error("Failed to commit maintenance record");
+      toast.error(log ? "Failed to update record" : "Failed to commit maintenance record");
     } finally {
       setLoading(false);
     }
@@ -93,9 +122,9 @@ export function AddMaintenanceLogDialog({ open, onOpenChange }: AddMaintenanceLo
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] rounded-none border-zinc-200">
         <DialogHeader>
-          <DialogTitle className="text-sm font-bold uppercase tracking-widest font-mono text-zinc-900">Schedule_Asset_Service</DialogTitle>
+          <DialogTitle className="text-sm font-bold uppercase tracking-widest font-mono text-zinc-900">{log ? 'Update_Asset_Service' : 'Schedule_Asset_Service'}</DialogTitle>
           <DialogDescription className="text-[10px] font-mono uppercase text-zinc-500">
-            Initialize new preventive or corrective maintenance sequence
+            {log ? 'Modify existing maintenance sequence details' : 'Initialize new preventive or corrective maintenance sequence'}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
