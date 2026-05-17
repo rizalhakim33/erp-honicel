@@ -8,6 +8,7 @@ import { AddWODialog } from '@/modules/production/components/AddWODialog';
 import { AddPODialog } from '@/modules/purchasing/components/AddPODialog';
 import { AddMaintenanceLogDialog } from '@/modules/maintenance/components/AddMaintenanceLogDialog';
 import { AddQCLogDialog } from '@/modules/qc/components/AddQCLogDialog';
+import { AddProductDialog } from '@/modules/production/components/AddProductDialog';
 
 export function GlobalDialogs() {
   const { openDialogs, close } = useDialogStore();
@@ -17,6 +18,10 @@ export function GlobalDialogs() {
       <AddItemDialog 
         open={openDialogs.item} 
         onOpenChange={(open) => !open && close('item')} 
+      />
+      <AddProductDialog 
+        open={openDialogs.product} 
+        onOpenChange={(open) => !open && close('product')} 
       />
       <AddBOMDialog 
         open={openDialogs.bom} 

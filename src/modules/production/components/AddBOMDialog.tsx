@@ -134,9 +134,9 @@ export function AddBOMDialog({ open, onOpenChange, onSuccess }: AddBOMDialogProp
                         ))
                       ) : (
                         <div className="p-2 text-[10px] font-mono uppercase text-zinc-400 text-center space-y-2">
-                          <p>No products found</p>
-                          <Button type="button" onClick={() => openDialog('item')} variant="outline" size="sm" className="w-full text-zinc-900 border-zinc-200 h-7 rounded-none">
-                            Add Product
+                          <p>No products found in database</p>
+                          <Button type="button" onClick={() => openDialog('product')} variant="outline" size="sm" className="w-full text-zinc-900 border-zinc-200 h-7 rounded-none">
+                            Add Product to Database
                           </Button>
                         </div>
                       )}

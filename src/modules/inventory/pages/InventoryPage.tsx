@@ -21,31 +21,40 @@ export default function InventoryPage() {
   }, [fetchItems]);
 
   const totalSKUs = items.length;
+  const productCount = items.filter(i => i.category === 'finished_good' || i.category === 'finished_good').length;
   const criticalItems = items.filter(i => i.stock <= i.min_stock).length;
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 uppercase">Inventory</h1>
-          <p className="text-zinc-500 font-mono text-[10px] uppercase tracking-wider mt-1">LOGISTICS / WAREHOUSE_A7_SECTOR</p>
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 uppercase">Master Registry</h1>
+          <p className="text-zinc-500 font-mono text-[10px] uppercase tracking-wider mt-1">LOGISTICS / DATA_INFRASTRUCTURE</p>
         </div>
         <div className="flex items-center gap-2">
+           <Button 
+            onClick={() => openDialog('product')}
+            variant="outline"
+            size="sm" 
+            className="border-zinc-200 text-zinc-600 hover:text-zinc-900 text-[10px] font-bold uppercase tracking-widest h-9"
+          >
+            REGISTER_FINISHED_GOOD
+          </Button>
           <Button 
             onClick={() => openDialog('item')}
             size="sm" 
             className="bg-zinc-900 text-white hover:bg-zinc-800 text-[10px] font-bold uppercase tracking-widest h-9"
           >
             <Plus className="w-3.5 h-3.5 mr-2" />
-            SECURE_ENTRY
+            SECURE_ENTRY_MD
           </Button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <KPICard title="Total SKUs" value={totalSKUs.toString()} icon={Package} color="slate" />
+        <KPICard title="Total Assets" value={totalSKUs.toString()} icon={Package} color="slate" />
+        <KPICard title="End Products" value={productCount.toString()} icon={TrendingUp} color="blue" />
         <KPICard title="Critical items" value={criticalItems.toString()} icon={AlertTriangle} color="red" />
-        <KPICard title="Inventory health" value="Optimal" icon={TrendingUp} color="green" />
       </div>
 
       <Tabs defaultValue="all" className="w-full">
@@ -53,7 +62,7 @@ export default function InventoryPage() {
           <TabsList className="bg-transparent h-auto p-0 gap-6">
             <TabsTrigger value="all" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent px-0 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 data-[state=active]:text-zinc-900 transition-all">Central_Registry</TabsTrigger>
             <TabsTrigger value="raw" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent px-0 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 data-[state=active]:text-zinc-900 transition-all">Raw_Matrix</TabsTrigger>
-            <TabsTrigger value="finished" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent px-0 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 data-[state=active]:text-zinc-900 transition-all">Export_Ready</TabsTrigger>
+            <TabsTrigger value="finished" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent px-0 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 data-[state=active]:text-zinc-900 transition-all">Product_Library</TabsTrigger>
           </TabsList>
         </div>
         

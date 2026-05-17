@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-type DialogType = 'item' | 'bom' | 'machine' | 'supplier' | 'wo' | 'po' | 'maintenance' | 'qc';
+type DialogType = 'item' | 'bom' | 'machine' | 'supplier' | 'wo' | 'po' | 'maintenance' | 'qc' | 'product';
 
 interface DialogState {
   openDialogs: Record<DialogType, boolean>;
@@ -19,6 +19,7 @@ export const useDialogStore = create<DialogState>((set) => ({
     po: false,
     maintenance: false,
     qc: false,
+    product: false,
   },
   open: (type) => set((state) => ({ 
     openDialogs: { ...state.openDialogs, [type]: true } 
