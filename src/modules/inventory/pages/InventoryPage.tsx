@@ -21,7 +21,7 @@ export default function InventoryPage() {
 
   const totalSKUs = items.length;
   const productCount = items.filter(i => i.category === 'finished_good').length;
-  const criticalItemsCount = items.filter(i => i.stock <= (i.min_stock || 0)).length;
+  const criticalItemsCount = items.filter(i => i.status === 'low_stock' || i.status === 'out_of_stock').length;
 
   return (
     <div className="space-y-6">

@@ -153,6 +153,49 @@ export default function ProductionPage() {
                                 <div className="text-[9px] text-zinc-400 font-mono uppercase tracking-widest">Yield_Matrix</div>
                              </div>
                           </div>
+                          {wo.status === 'in_progress' && (
+                            <div className="flex items-center gap-2 mt-4 pt-4 border-t border-zinc-50">
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="h-8 text-[9px] font-bold uppercase rounded-none border-zinc-200 text-zinc-600"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  useProductionStore.getState().updateWOQuantity(wo.id, Math.max(0, wo.produced_quantity - 1));
+                                }}
+                              >
+                                -1
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="h-8 flex-1 text-[9px] font-bold uppercase rounded-none border-zinc-200 text-zinc-600"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  useProductionStore.getState().updateWOQuantity(wo.id, Math.min(wo.target_quantity, wo.produced_quantity + 1));
+                                }}
+                              >
+                                Increment Progress
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="h-8 text-[9px] font-bold uppercase rounded-none border-zinc-200 text-zinc-600"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const val = prompt("Enter precise output quantity:", wo.produced_quantity.toString());
+                                  if (val !== null) {
+                                      const num = parseInt(val);
+                                      if (!isNaN(num)) {
+                                          useProductionStore.getState().updateWOQuantity(wo.id, num);
+                                      }
+                                  }
+                                }}
+                              >
+                                SET
+                              </Button>
+                            </div>
+                          )}
                        </div>
                        <div className="p-6 border-l border-zinc-100 flex items-center gap-2 relative z-30">
                            <Button 

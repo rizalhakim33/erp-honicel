@@ -25,6 +25,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export default function SettingsPage() {
   const { user, profile, role } = useAuthStore();
   const [dbStatus, setDbStatus] = React.useState<'checking' | 'connected' | 'error' | 'unconfigured'>('checking');
+  const [dbError, setDbError] = React.useState<string | null>(null);
   const [activeTab, setActiveTab] = React.useState('Profile');
   const [pendingUsers, setPendingUsers] = React.useState<any[]>([]);
   const [rolesList, setRolesList] = React.useState<any[]>([]);
@@ -36,10 +37,18 @@ export default function SettingsPage() {
         setDbStatus('unconfigured');
         return;
       }
+      
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Connection timeout')), 10000)
+      );
+
       try {
-        const { error } = await supabase.from('profiles').select('count', { count: 'exact', head: true });
+        const fetchPromise = supabase.from('profiles').select('count', { count: 'exact', head: true });
+        const { error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
+        
         if (error) throw error;
         setDbStatus('connected');
+        setDbError(null);
         
         if (isSuperAdmin) {
             const { data: pending } = await supabase.from('profiles').select('*').eq('is_active', false);
@@ -60,9 +69,10 @@ export default function SettingsPage() {
                 }
             }
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error('Connection check failed:', e);
         setDbStatus('error');
+        setDbError(e.message || 'Unknown network error');
       }
     }
     checkConn();
@@ -156,9 +166,14 @@ export default function SettingsPage() {
                 <span className="text-[10px] font-mono uppercase font-bold text-zinc-700">
                   {dbStatus === 'connected' ? 'Online' : 
                    dbStatus === 'checking' ? 'Checking...' :
-                   dbStatus === 'unconfigured' ? 'Not Configured' : 'Offline / RLS Blocked'}
+                   dbStatus === 'unconfigured' ? 'Not Configured' : 'Offline'}
                 </span>
              </div>
+             {dbStatus === 'error' && dbError && (
+               <div className="mt-2 text-[9px] font-mono text-red-400 uppercase leading-tight">
+                 Error: {dbError.substring(0, 50)}{dbError.length > 50 ? '...' : ''}
+               </div>
+             )}
           </div>
         </div>
 

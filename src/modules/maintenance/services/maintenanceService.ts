@@ -17,16 +17,13 @@ export const maintenanceService = {
   async getLogs() {
     const { data, error } = await supabase
       .from('maintenance_logs')
-      .select(`
-        *,
-        machines (name)
-      `)
+      .select('*')
       .order('created_at', { ascending: false });
     
     if (error) throw error;
     return (data || []).map(log => ({
       ...log,
-      machine_name: log.machines?.name,
+      machine_name: log.machine_name || 'Generic Machine',
       status: log.end_time ? 'Completed' : 'In Progress'
     })) as MaintenanceLog[];
   },

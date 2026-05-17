@@ -153,7 +153,7 @@ export function WODetailsDialog({ open, onOpenChange, workOrder }: WODetailsDial
                 </Button>
                 <Button 
                   onClick={() => {
-                    const val = prompt("Enter precise output quantity:", workOrder.produced_quantity);
+                    const val = prompt("Enter precise output quantity:", workOrder.produced_quantity.toString());
                     if (val !== null) {
                         const num = parseInt(val);
                         if (!isNaN(num)) {

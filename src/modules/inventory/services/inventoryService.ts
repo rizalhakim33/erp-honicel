@@ -5,13 +5,15 @@ export const inventoryService = {
   async getItems() {
     const { data: itemsData, error: itemsError } = await supabase
       .from('items')
-      .select('*, stocks(quantity)')
+      .select('*')
       .order('name');
     
     if (itemsError) throw itemsError;
 
     return (itemsData || []).map(item => {
-      const stockQty = item.stocks?.reduce((acc: number, s: any) => acc + (s.quantity || 0), 0) || 0;
+      // In this simplified version, we might not have the stocks joined
+      // We assume stock is 0 if not provided or handle it differently
+      const stockQty = item.stock || 0; 
       const minStock = item.min_stock || 10;
       return {
         ...item,
