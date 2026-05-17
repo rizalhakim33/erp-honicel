@@ -7,6 +7,7 @@ export interface WorkOrder {
   machine_id: string;
   target_quantity: number;
   produced_quantity: number;
+  reject_quantity?: number;
   status: 'planned' | 'in_progress' | 'completed' | 'cancelled';
   product_name?: string;
   machine_name?: string;

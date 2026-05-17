@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useAuthStore } from '@/modules/auth/store/useAuthStore';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -27,6 +28,7 @@ const navigation = [
 
 export const Sidebar = ({ isOpen, setOpen }: { isOpen: boolean, setOpen: (v: boolean) => void }) => {
   const location = useLocation();
+  const { user, role } = useAuthStore();
 
   return (
     <>
@@ -45,9 +47,9 @@ export const Sidebar = ({ isOpen, setOpen }: { isOpen: boolean, setOpen: (v: boo
         <div className="p-6 border-b border-zinc-800">
           <div className="flex items-center gap-2 mb-1">
             <div className="w-5 h-5 bg-blue-500 rounded-sm"></div>
-            <span className="text-zinc-100 font-bold tracking-tight text-lg uppercase">CORE-ERP</span>
+            <span className="text-zinc-100 font-bold tracking-tight text-lg uppercase italic">HONICEL ERP</span>
           </div>
-          <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-[2px]">Manufacturing Suite v1.5</span>
+          <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-[2px]">Manufacturing Suite v4.2</span>
         </div>
 
         <nav className="p-4 space-y-1 overflow-y-auto h-[calc(100vh-140px)]">
@@ -78,10 +80,14 @@ export const Sidebar = ({ isOpen, setOpen }: { isOpen: boolean, setOpen: (v: boo
 
         <div className="p-4 border-t border-zinc-800 absolute bottom-0 w-full">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded bg-zinc-800 flex items-center justify-center text-zinc-300 font-mono text-xs italic">SA</div>
+            <div className="w-8 h-8 rounded bg-zinc-800 flex items-center justify-center text-zinc-300 font-mono text-xs italic uppercase">
+              {user?.email?.substring(0, 2) || 'OP'}
+            </div>
             <div>
-              <div className="text-xs text-zinc-200 font-medium">SysAdmin Architect</div>
-              <div className="text-[10px] text-zinc-500 font-mono">Role: Super Admin</div>
+              <div className="text-xs text-zinc-200 font-medium truncate max-w-[120px]">
+                {user?.email?.split('@')[0] || 'Operator_Guest'}
+              </div>
+              <div className="text-[10px] text-zinc-500 font-mono uppercase">Role: {role || 'Viewer'}</div>
             </div>
           </div>
         </div>

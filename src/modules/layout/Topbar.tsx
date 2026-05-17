@@ -29,7 +29,7 @@ export const Topbar = ({ onOpenSidebar }: { onOpenSidebar: () => void }) => {
           <Menu className="w-5 h-5" />
         </Button>
         <Link to="/" className="flex items-center text-[11px] text-zinc-500 font-mono tracking-tight hover:opacity-80 transition-opacity">
-          <span className="hover:text-zinc-900 cursor-pointer">CORE-ERP</span>
+          <span className="hover:text-zinc-900 cursor-pointer font-bold italic">HONICEL-ERP</span>
           <span className="mx-2 text-zinc-300">/</span>
           <span className="text-zinc-900 font-bold uppercase tracking-wider">Operations Dashboard</span>
         </Link>

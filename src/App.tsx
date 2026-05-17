@@ -1,5 +1,7 @@
+import * as React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { DashboardLayout } from './modules/layout/DashboardLayout';
+import LoginPage from './modules/auth/pages/LoginPage';
 import DashboardPage from './modules/dashboard/pages/DashboardPage';
 import InventoryPage from './modules/inventory/pages/InventoryPage';
 import PurchasingPage from './modules/purchasing/pages/PurchasingPage';
@@ -10,12 +12,37 @@ import QCPage from './modules/qc/pages/QCPage';
 import SettingsPage from './modules/settings/pages/SettingsPage';
 import { Toaster } from '@/components/ui/sonner';
 import { GlobalDialogs } from './components/GlobalDialogs';
+import { useAuthStore } from './modules/auth/store/useAuthStore';
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, isLoading } = useAuthStore();
+  
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#09090b] flex items-center justify-center font-mono text-[10px] text-zinc-500 uppercase tracking-widest">
+        Syncing_with_global_intelligence_node...
+      </div>
+    );
+  }
+  
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return <>{children}</>;
+}
 
 export default function App() {
   return (
     <Router>
       <Routes>
-        <Route element={<DashboardLayout />}>
+        <Route path="/login" element={<LoginPage />} />
+        
+        <Route element={
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/inventory" element={<InventoryPage />} />
           <Route path="/purchasing" element={<PurchasingPage />} />

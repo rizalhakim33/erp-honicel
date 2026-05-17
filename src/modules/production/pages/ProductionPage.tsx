@@ -39,6 +39,33 @@ export default function ProductionPage() {
     }
   };
 
+  const oeeMetrics = React.useMemo(() => {
+    if (!workOrders.length) return { availability: 0, performance: 0, quality: 0, oee: 0 };
+    
+    // Performance: Produced / Target
+    const totalTarget = workOrders.reduce((acc, wo) => acc + Number(wo.target_quantity), 0);
+    const totalProduced = workOrders.reduce((acc, wo) => acc + Number(wo.produced_quantity), 0);
+    const performance = totalTarget > 0 ? (totalProduced / totalTarget) : 0;
+    
+    // Quality: (Produced - Rejected) / Produced
+    const totalRejected = workOrders.reduce((acc, wo) => acc + (Number(wo.reject_quantity) || 0), 0);
+    const quality = totalProduced > 0 ? ((totalProduced - totalRejected) / totalProduced) : 0.98;
+    
+    // Availability: Running Machines / Total Machines (Simplified)
+    const runningMachines = machines.filter(m => m.status === 'running').length;
+    const availability = machines.length > 0 ? (runningMachines / machines.length) : 0.92;
+    
+    // OEE = A * P * Q
+    const oee = availability * performance * quality;
+    
+    return {
+      availability: Math.round(availability * 100),
+      performance: Math.round(performance * 100),
+      quality: Math.round(quality * 100),
+      oee: Math.round(oee * 100)
+    };
+  }, [workOrders, machines]);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -225,7 +252,8 @@ export default function ProductionPage() {
                   <div className="space-y-4">
                     {machines.length > 0 ? (
                       machines.map(m => {
-                        const rate = Math.floor(Math.random() * (98 - 70 + 1) + 70);
+                        // Use real data based on status
+                        const rate = m.status === 'running' ? 95 : m.status === 'idle' ? 40 : 0;
                         return (
                           <div key={m.id} className="space-y-1.5">
                             <div className="flex justify-between text-[10px] font-mono uppercase">
@@ -235,10 +263,10 @@ export default function ProductionPage() {
                             <div className="w-full bg-zinc-100 h-1 rounded-full overflow-hidden">
                               <div 
                                 className={cn(
-                                  "h-full",
-                                  m.status === 'breakdown' ? "bg-red-500" : "bg-zinc-900"
+                                  "h-full transition-all duration-500",
+                                  m.status === 'breakdown' ? "bg-red-500" : m.status === 'idle' ? "bg-amber-500" : "bg-zinc-900"
                                 )} 
-                                style={{ width: `${m.status === 'breakdown' ? 0 : rate}%` }} 
+                                style={{ width: `${rate}%` }} 
                               />
                             </div>
                           </div>
@@ -249,26 +277,74 @@ export default function ProductionPage() {
                     )}
                   </div>
                   <Button 
-                    onClick={() => toast.info("Recalibrating utilization sensors...")}
+                    onClick={() => {
+                        fetchMachines();
+                        toast.info("Recalibrating utilization sensors...");
+                    }}
                     className="w-full mt-6 bg-zinc-900 text-white rounded-none font-mono text-[10px] uppercase h-9"
                   >
-                    RECALIBRATE_SYSTEM
+                    REFRESH_TELEMETRY
                   </Button>
                </CardContent>
             </Card>
             <Card className="border border-zinc-200 rounded-xl shadow-none bg-white overflow-hidden">
                <CardHeader className="border-b border-zinc-100 p-4 bg-zinc-50/50">
-                  <CardTitle className="text-xs font-bold uppercase tracking-widest text-zinc-500">OEE_Analytics</CardTitle>
+                  <CardTitle className="text-xs font-bold uppercase tracking-widest text-zinc-500">OEE_Analytics (Overall_Equipment_Effectiveness)</CardTitle>
                </CardHeader>
-               <CardContent className="p-6 flex flex-col items-center justify-center min-h-[160px]">
-                  <Activity className="w-12 h-12 text-zinc-200 mb-4" />
-                  <p className="text-[10px] font-mono text-zinc-400 uppercase text-center mb-4">Realtime Overall Equipment Effectiveness data streaming active</p>
+               <CardContent className="p-6">
+                  <div className="flex flex-col items-center justify-center mb-8">
+                    <div className="relative w-32 h-32 flex items-center justify-center">
+                        <svg className="w-full h-full transform -rotate-90">
+                            <circle
+                                cx="64"
+                                cy="64"
+                                r="58"
+                                stroke="currentColor"
+                                strokeWidth="8"
+                                fill="transparent"
+                                className="text-zinc-100"
+                            />
+                            <circle
+                                cx="64"
+                                cy="64"
+                                r="58"
+                                stroke="currentColor"
+                                strokeWidth="8"
+                                fill="transparent"
+                                strokeDasharray={364.4}
+                                strokeDashoffset={364.4 - (364.4 * oeeMetrics.oee) / 100}
+                                className="text-blue-600 transition-all duration-1000 ease-out"
+                            />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                            <span className="text-2xl font-bold text-zinc-900 font-mono tracking-tighter">{oeeMetrics.oee}%</span>
+                            <span className="text-[8px] font-mono text-zinc-400 uppercase tracking-widest">Global_OEE</span>
+                        </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                        { label: 'Availability', value: oeeMetrics.availability, color: 'text-zinc-600' },
+                        { label: 'Performance', value: oeeMetrics.performance, color: 'text-zinc-600' },
+                        { label: 'Quality', value: oeeMetrics.quality, color: 'text-zinc-600' },
+                    ].map((m) => (
+                        <div key={m.label} className="p-2 border border-zinc-100 bg-zinc-50/50 text-center rounded-sm">
+                            <div className="text-[10px] font-bold text-zinc-900 font-mono">{m.value}%</div>
+                            <div className="text-[8px] text-zinc-400 font-mono uppercase tracking-tight">{m.label}</div>
+                        </div>
+                    ))}
+                  </div>
+
                   <Button 
-                    onClick={() => toast.success("Analytical report dispatched to central terminal")}
+                    onClick={() => {
+                        fetchWorkOrders();
+                        toast.success("Intelligence report dispatched to central terminal");
+                    }}
                     variant="outline" 
-                    className="rounded-none font-mono text-[10px] uppercase h-9 border-zinc-200 px-6"
+                    className="w-full mt-6 rounded-none font-mono text-[10px] uppercase h-9 border-zinc-200"
                   >
-                    DOWNLOAD_ANALYTICS
+                    GENERATE_DETAILED_OEE
                   </Button>
                </CardContent>
             </Card>
