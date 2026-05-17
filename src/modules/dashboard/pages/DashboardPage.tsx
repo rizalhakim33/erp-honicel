@@ -159,17 +159,9 @@ export default function DashboardPage() {
                             <div className="text-[10px] text-zinc-400 font-mono">ID: {wo.id.substring(0, 8)}</div>
                           </TableCell>
                           <TableCell className="py-4">
-                            <div className="flex flex-col items-center gap-1.5">
-                              <div className="w-16 h-1 bg-zinc-100 rounded-full overflow-hidden">
-                                <div 
-                                  className={cn(
-                                    "h-full rounded-full transition-all",
-                                    wo.status === 'completed' ? "bg-green-500" : wo.status === 'in_progress' ? "bg-blue-500" : wo.status === 'cancelled' ? "bg-red-500" : "bg-zinc-400"
-                                  )} 
-                                  style={{ width: `${progress}%` }}
-                                />
-                              </div>
-                              <span className="text-[9px] font-mono text-zinc-400">{progress}%</span>
+                            <div className="flex flex-col items-center gap-0.5">
+                              <span className="text-sm font-mono font-bold text-zinc-900">{progress}%</span>
+                              <span className="text-[8px] font-mono text-zinc-400 uppercase tracking-tighter">Utilization</span>
                             </div>
                           </TableCell>
                           <TableCell className="text-right py-4">

@@ -33,8 +33,9 @@ import { useProductionStore } from "../../production/store/useProductionStore";
 
 const formSchema = z.object({
   name: z.string().min(2, "Machine name is required"),
+  code: z.string().min(2, "Machine code is required"),
   type: z.string().min(1, "Machine type is required"),
-  status: z.enum(['operational', 'maintenance', 'breakdown']),
+  status: z.enum(['running', 'idle', 'maintenance', 'breakdown']),
 });
 
 interface AddMachineDialogProps {
@@ -51,8 +52,9 @@ export function AddMachineDialog({ open, onOpenChange, onSuccess }: AddMachineDi
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      code: `MAC-${Math.floor(100 + Math.random() * 900)}`,
       type: "Production",
-      status: "operational",
+      status: "idle",
     },
   });
 
@@ -88,19 +90,34 @@ export function AddMachineDialog({ open, onOpenChange, onSuccess }: AddMachineDi
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Machine Badge Name</FormLabel>
-                  <FormControl>
-                    <Input className="rounded-none border-zinc-200 font-mono text-xs uppercase" {...field} />
-                  </FormControl>
-                  <FormMessage className="text-[9px] font-mono uppercase" />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Machine Badge Name</FormLabel>
+                    <FormControl>
+                      <Input className="rounded-none border-zinc-200 font-mono text-xs uppercase" {...field} />
+                    </FormControl>
+                    <FormMessage className="text-[9px] font-mono uppercase" />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="code"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Machine Code</FormLabel>
+                    <FormControl>
+                      <Input className="rounded-none border-zinc-200 font-mono text-xs uppercase" {...field} />
+                    </FormControl>
+                    <FormMessage className="text-[9px] font-mono uppercase" />
+                  </FormItem>
+                )}
+              />
+            </div>
             <FormField
               control={form.control}
               name="type"
@@ -127,7 +144,8 @@ export function AddMachineDialog({ open, onOpenChange, onSuccess }: AddMachineDi
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="operational" className="font-mono text-xs uppercase text-green-600">Operational</SelectItem>
+                      <SelectItem value="running" className="font-mono text-xs uppercase text-green-600">Running</SelectItem>
+                      <SelectItem value="idle" className="font-mono text-xs uppercase text-zinc-600">Idle</SelectItem>
                       <SelectItem value="maintenance" className="font-mono text-xs uppercase text-amber-600">Maintenance</SelectItem>
                       <SelectItem value="breakdown" className="font-mono text-xs uppercase text-red-600">Breakdown</SelectItem>
                     </SelectContent>

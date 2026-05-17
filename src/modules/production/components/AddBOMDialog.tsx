@@ -24,10 +24,20 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
 import { useProductionStore } from "../store/useProductionStore";
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Link } from "react-router-dom";
+import { useInventoryStore } from "../../inventory/store/useInventoryStore";
+
 const formSchema = z.object({
   name: z.string().min(2, "Product name is required"),
-  description: z.string().optional(),
-  process_flow: z.string().optional(),
+  finished_good_id: z.string().min(1, "Final product selection is required"),
+  version: z.string().min(1, "Version is required"),
 });
 
 interface AddBOMDialogProps {
@@ -39,13 +49,22 @@ interface AddBOMDialogProps {
 export function AddBOMDialog({ open, onOpenChange, onSuccess }: AddBOMDialogProps) {
   const [loading, setLoading] = React.useState(false);
   const { fetchBoms } = useProductionStore();
+  const { items, fetchItems } = useInventoryStore();
+
+  React.useEffect(() => {
+    if (open) {
+      fetchItems();
+    }
+  }, [open, fetchItems]);
+
+  const finishedGoods = items.filter(i => i.category === 'finished_good' || i.category === 'Export Product');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      description: "",
-      process_flow: "Standard Production Flow",
+      finished_good_id: "",
+      version: "1.0",
     },
   });
 
@@ -76,7 +95,7 @@ export function AddBOMDialog({ open, onOpenChange, onSuccess }: AddBOMDialogProp
         <DialogHeader>
           <DialogTitle className="text-sm font-bold uppercase tracking-widest font-mono">Architect_New_BOM</DialogTitle>
           <DialogDescription className="text-[10px] font-mono uppercase">
-            Define a new product structure and process flow
+            Define a new product structure
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -86,7 +105,7 @@ export function AddBOMDialog({ open, onOpenChange, onSuccess }: AddBOMDialogProp
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">FG Product Name</FormLabel>
+                  <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">BOM Name / Design Code</FormLabel>
                   <FormControl>
                     <Input className="rounded-none border-zinc-200 font-mono text-xs uppercase" {...field} />
                   </FormControl>
@@ -96,23 +115,41 @@ export function AddBOMDialog({ open, onOpenChange, onSuccess }: AddBOMDialogProp
             />
             <FormField
               control={form.control}
-              name="description"
+              name="finished_good_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Structural Description</FormLabel>
-                  <FormControl>
-                    <Input className="rounded-none border-zinc-200 font-mono text-xs" {...field} />
-                  </FormControl>
+                  <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Target Final Product</FormLabel>
+                   <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="rounded-none border-zinc-200 font-mono text-xs uppercase">
+                        <SelectValue placeholder="Select Product" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {finishedGoods.length > 0 ? (
+                        finishedGoods.map(i => (
+                          <SelectItem key={i.id} value={i.id} className="font-mono text-xs uppercase">{i.name}</SelectItem>
+                        ))
+                      ) : (
+                        <div className="p-2 text-[10px] font-mono uppercase text-zinc-400 text-center space-y-2">
+                          <p>No products found</p>
+                          <Button asChild variant="outline" size="sm" className="w-full text-zinc-900 border-zinc-200 h-7 rounded-none">
+                            <Link to="/inventory">Add Product</Link>
+                          </Button>
+                        </div>
+                      )}
+                    </SelectContent>
+                  </Select>
                   <FormMessage className="text-[9px] font-mono uppercase" />
                 </FormItem>
               )}
             />
             <FormField
               control={form.control}
-              name="process_flow"
+              name="version"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Process Flow Protocol</FormLabel>
+                  <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Spec Version</FormLabel>
                   <FormControl>
                     <Input className="rounded-none border-zinc-200 font-mono text-xs uppercase" {...field} />
                   </FormControl>

@@ -26,9 +26,11 @@ import { usePurchasingStore } from "../store/usePurchasingStore";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name is required"),
-  location: z.string().optional(),
-  category: z.string().optional(),
-  performance_rating: z.number().min(0).max(100),
+  code: z.string().min(2, "Code is required"),
+  contact_name: z.string().optional(),
+  email: z.string().email("Invalid email").optional().or(z.literal("")),
+  phone: z.string().optional(),
+  address: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -47,9 +49,11 @@ export function AddSupplierDialog({ open, onOpenChange, onSuccess }: AddSupplier
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      location: "",
-      category: "Material Supplier",
-      performance_rating: 100,
+      code: `VND-${Math.floor(1000 + Math.random() * 9000)}`,
+      contact_name: "",
+      email: "",
+      phone: "",
+      address: "",
     },
   });
 
@@ -85,39 +89,53 @@ export function AddSupplierDialog({ open, onOpenChange, onSuccess }: AddSupplier
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4">
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Company Name</FormLabel>
+                    <FormControl>
+                      <Input className="rounded-none border-zinc-200 font-mono text-xs" {...field} />
+                    </FormControl>
+                    <FormMessage className="text-[9px] font-mono uppercase" />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="code"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Vendor Code</FormLabel>
+                    <FormControl>
+                      <Input className="rounded-none border-zinc-200 font-mono text-xs" {...field} />
+                    </FormControl>
+                    <FormMessage className="text-[9px] font-mono uppercase" />
+                  </FormItem>
+                )}
+              />
+            </div>
             <FormField
               control={form.control}
-              name="name"
+              name="contact_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Company Name</FormLabel>
+                  <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Contact Person</FormLabel>
                   <FormControl>
                     <Input className="rounded-none border-zinc-200 font-mono text-xs" {...field} />
                   </FormControl>
-                  <FormMessage className="text-[9px] font-mono uppercase" />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="location"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Base Location</FormLabel>
-                  <FormControl>
-                    <Input className="rounded-none border-zinc-200 font-mono text-xs" {...field} />
-                  </FormControl>
-                  <FormMessage className="text-[9px] font-mono uppercase" />
                 </FormItem>
               )}
             />
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="category"
+                name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Category</FormLabel>
+                    <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Email</FormLabel>
                     <FormControl>
                       <Input className="rounded-none border-zinc-200 font-mono text-xs" {...field} />
                     </FormControl>
@@ -126,22 +144,29 @@ export function AddSupplierDialog({ open, onOpenChange, onSuccess }: AddSupplier
               />
               <FormField
                 control={form.control}
-                name="performance_rating"
+                name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Initial Rating (%)</FormLabel>
+                    <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Phone</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="number" 
-                        className="rounded-none border-zinc-200 font-mono text-xs" 
-                        {...field} 
-                        onChange={e => field.onChange(parseInt(e.target.value))}
-                      />
+                      <Input className="rounded-none border-zinc-200 font-mono text-xs" {...field} />
                     </FormControl>
                   </FormItem>
                 )}
               />
             </div>
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[10px] font-bold uppercase text-zinc-500 font-mono">Base Address</FormLabel>
+                  <FormControl>
+                    <Input className="rounded-none border-zinc-200 font-mono text-xs" {...field} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
             <DialogFooter className="pt-4 gap-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="rounded-none font-mono text-[10px] uppercase h-9 border-zinc-200">CANCEL</Button>
               <Button type="submit" disabled={loading} className="rounded-none bg-zinc-900 text-white hover:bg-zinc-800 font-mono text-[10px] uppercase h-9 tracking-widest px-6">
