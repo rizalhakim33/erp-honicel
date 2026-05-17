@@ -150,12 +150,20 @@ export function ItemTable({ filterType, title }: { filterType?: string; title?: 
         cell: ({ row }) => {
           return (
             <DropdownMenu>
-              <DropdownMenuTrigger className="h-8 w-8 p-0 flex items-center justify-center rounded-md hover:bg-zinc-100 transition-colors cursor-pointer outline-none">
-                <MoreHorizontal className="h-4 w-4" />
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0 flex items-center justify-center rounded-md hover:bg-zinc-100 transition-colors cursor-pointer outline-none">
+                  <MoreHorizontal className="h-4 w-4" />
+                  <span className="sr-only">Open menu</span>
+                </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="bg-white border-zinc-200">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => navigator.clipboard.writeText(row.original.sku)}>
+                <DropdownMenuItem onClick={() => {
+                  if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                    navigator.clipboard.writeText(row.original.sku);
+                    toast.success("SKU copied to clipboard");
+                  }
+                }}>
                   Copy SKU
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -167,7 +175,7 @@ export function ItemTable({ filterType, title }: { filterType?: string; title?: 
                   } catch (e) {
                     toast.error("Failed to delete item")
                   }
-                }} className="text-red-600">
+                }} className="text-red-600 focus:text-red-600">
                   Delete connection
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -261,7 +269,7 @@ export function ItemTable({ filterType, title }: { filterType?: string; title?: 
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell colSpan={table.getAllColumns().length} className="h-24 text-center">
                   No results.
                 </TableCell>
               </TableRow>
