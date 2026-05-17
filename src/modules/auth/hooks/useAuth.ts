@@ -6,35 +6,42 @@ export const useAuth = () => {
   const { setUser, setProfile, setRole, setApproved, setLoading } = useAuthStore();
 
   useEffect(() => {
+    let mounted = true;
+
+    // Safety timeout to ensure loading screen doesn't stick
+    const safetyTimeout = setTimeout(() => {
+      if (mounted) setLoading(false);
+    }, 8000);
+
     const initAuth = async () => {
       try {
-        setLoading(true);
         const { data: { session } } = await supabase.auth.getSession();
         
+        if (!mounted) return;
+
         if (session) {
           setUser(session.user);
           
+          const email = session.user.email?.toLowerCase();
           // Super Admin Bypass
-          if (session.user.email === 'rizal.h33@gmail.com') {
+          if (email === 'rizal.h33@gmail.com') {
             setRole('super_admin');
             setApproved(true);
             setProfile({ email: session.user.email, full_name: 'Super Admin' });
-            return;
-          }
-
-          // Fetch profile and role
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*, roles(name)')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (profile) {
-            setProfile(profile);
-            setRole(profile.roles?.name || 'viewer');
-            setApproved(profile.is_active);
           } else {
-            setApproved(false);
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*, roles(name)')
+              .eq('id', session.user.id)
+              .single();
+            
+            if (profile) {
+              setProfile(profile);
+              setRole(profile.roles?.name || 'viewer');
+              setApproved(profile.is_active || false);
+            } else {
+              setApproved(false);
+            }
           }
         } else {
           setUser(null);
@@ -45,26 +52,27 @@ export const useAuth = () => {
       } catch (error) {
         console.error('Auth initialization failed:', error);
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+          clearTimeout(safetyTimeout);
+        }
       }
     };
 
     initAuth();
 
-    let subscription: { unsubscribe: () => void } | null = null;
-    
-    try {
-      const { data } = supabase.auth.onAuthStateChange(async (_event, session) => {
-        if (session) {
-          setUser(session.user);
-          
-          if (session.user.email === 'rizal.h33@gmail.com') {
-            setRole('super_admin');
-            setApproved(true);
-            setProfile({ email: session.user.email, full_name: 'Super Admin' });
-            return;
-          }
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!mounted) return;
 
+      if (session) {
+        setUser(session.user);
+        const email = session.user.email?.toLowerCase();
+        
+        if (email === 'rizal.h33@gmail.com') {
+          setRole('super_admin');
+          setApproved(true);
+          setProfile({ email: session.user.email, full_name: 'Super Admin' });
+        } else {
           const { data: profile } = await supabase
             .from('profiles')
             .select('*, roles(name)')
@@ -74,26 +82,26 @@ export const useAuth = () => {
           if (profile) {
             setProfile(profile);
             setRole(profile.roles?.name || 'viewer');
-            setApproved(profile.is_active);
+            setApproved(profile.is_active || false);
           } else {
             setApproved(false);
           }
-        } else {
-          setUser(null);
-          setProfile(null);
-          setRole(null);
-          setApproved(false);
         }
-      });
-      subscription = data.subscription;
-    } catch (error) {
-      console.error('Auth state change listener failed:', error);
-    }
+      } else {
+        setUser(null);
+        setProfile(null);
+        setRole(null);
+        setApproved(false);
+      }
+      setLoading(false);
+    });
 
     return () => {
-      subscription?.unsubscribe();
+      mounted = false;
+      clearTimeout(safetyTimeout);
+      authListener.subscription.unsubscribe();
     };
-  }, [setUser, setProfile, setRole, setLoading]);
+  }, []);
 
   return { supabase };
 };

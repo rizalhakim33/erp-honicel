@@ -36,7 +36,14 @@ export default function LoginPage() {
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes('Email not confirmed')) {
+          toast.error('Identity verification pending. Please confirm your email in your inbox or contact the system administrator (rizal.h33@gmail.com).');
+        } else {
+          throw error;
+        }
+        return;
+      }
       toast.success('Access Granted - Synchronizing profile...');
       navigate('/');
     } catch (error: any) {

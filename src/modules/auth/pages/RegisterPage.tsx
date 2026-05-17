@@ -27,6 +27,9 @@ export default function RegisterPage() {
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/login`,
+        }
       });
 
       if (signUpError) throw signUpError;
@@ -45,7 +48,7 @@ export default function RegisterPage() {
         if (profileError) throw profileError;
       }
 
-      toast.success('Registration sequence successful. Pending Super Admin approval.');
+      toast.success('Registration sequence successful. Please check your inbox for authorization link and then wait for Super Admin approval.');
       navigate('/login');
     } catch (error: any) {
       console.error('Registration error:', error);
