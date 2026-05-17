@@ -11,10 +11,12 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal, Package, Filter, Download } from "lucide-react"
+import { MoreHorizontal, Package, Filter, Download, Upload } from "lucide-react"
 
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { ImportButton } from "@/components/ui/ImportButton"
+import { exportToCSV } from "@/lib/csv"
 import { cn } from "@/lib/utils"
 import {
   DropdownMenu,
@@ -116,7 +118,7 @@ export const columns: ColumnDef<InventoryItem>[] = [
 
 export function ItemTable({ filterType, title }: { filterType?: string; title?: string }) {
   const openDialog = useDialogStore(state => state.open)
-  const { items, fetchItems, deleteItem } = useInventoryStore()
+  const { items, fetchItems, deleteItem, addItem } = useInventoryStore()
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -263,6 +265,28 @@ export function ItemTable({ filterType, title }: { filterType?: string; title?: 
     }
   ], [openDialog, deleteItem])
 
+  const handleExport = () => {
+    exportToCSV(filteredItems, 'inventory_assets');
+  };
+
+  const handleImport = async (data: any[]) => {
+    for (const item of data) {
+      try {
+        await addItem({
+          name: item.name || 'Imported Item',
+          sku: item.sku || `SKU-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+          category: item.category || 'raw_material',
+          stock: item.stock || 0,
+          unit: item.unit || 'pcs',
+          min_stock: item.min_stock || 10
+        });
+      } catch (e) {
+        console.error('Import failed for item:', item, e);
+      }
+    }
+    fetchItems();
+  };
+
   const table = useReactTable({
     data: filteredItems,
     columns: tableColumns,
@@ -303,7 +327,8 @@ export function ItemTable({ filterType, title }: { filterType?: string; title?: 
           </Button>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="rounded-none gap-2 text-zinc-600 font-mono text-[10px] uppercase border-zinc-200 h-9">
+          <ImportButton onImport={handleImport} label="Import_Assets" className="rounded-none font-mono text-[10px] uppercase border-zinc-200 h-9" />
+          <Button onClick={handleExport} variant="outline" size="sm" className="rounded-none gap-2 text-zinc-600 font-mono text-[10px] uppercase border-zinc-200 h-9">
             <Download className="w-4 h-4" /> Export_Data
           </Button>
           <Button onClick={() => openDialog('item')} size="sm" className="rounded-none gap-2 bg-zinc-900 hover:bg-zinc-800 font-mono text-[10px] uppercase h-9">

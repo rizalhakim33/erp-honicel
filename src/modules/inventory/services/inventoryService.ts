@@ -3,18 +3,45 @@ import { InventoryItem } from '../types';
 
 export const inventoryService = {
   async getItems() {
-    const { data, error } = await supabase
+    const { data: itemsData, error: itemsError } = await supabase
       .from('items')
-      .select('*')
+      .select('*, stocks(quantity)')
       .order('name');
     
-    if (error) throw error;
-    return (data || []).map(item => ({
-      ...item,
-      category: item.type,
-      stock: item.stock || 0,
-      status: (item.stock || 0) <= (item.min_stock || 0) ? 'low_stock' : 'in_stock'
-    })) as InventoryItem[];
+    if (itemsError) throw itemsError;
+
+    return (itemsData || []).map(item => {
+      const stockQty = item.stocks?.reduce((acc: number, s: any) => acc + (s.quantity || 0), 0) || 0;
+      return {
+        ...item,
+        category: item.type,
+        stock: stockQty,
+        status: stockQty < 10 ? 'low_stock' : 'in_stock'
+      };
+    }) as InventoryItem[];
+  },
+
+  async getOrCreateDefaultWarehouse() {
+    const { data: warehouses, error: whError } = await supabase
+      .from('warehouses')
+      .select('id')
+      .limit(1);
+    
+    if (whError) throw whError;
+
+    if (warehouses && warehouses.length > 0) {
+      return warehouses[0].id;
+    }
+
+    // Create a default warehouse if none exists
+    const { data: newWh, error: createError } = await supabase
+      .from('warehouses')
+      .insert([{ name: 'Main Warehouse', code: 'W-MAIN', location: 'Primary Site' }])
+      .select()
+      .single();
+    
+    if (createError) throw createError;
+    return newWh.id;
   },
 
   async addItem(item: Omit<InventoryItem, 'id' | 'status'>) {
@@ -25,49 +52,79 @@ export const inventoryService = {
     else if (cat.includes('semi')) itemType = 'semi_finished';
     else if (cat.includes('spare') || cat.includes('part') || cat.includes('asset')) itemType = 'sparepart';
 
-    const { data, error } = await supabase
+    const { data: newItem, error: itemError } = await supabase
       .from('items')
       .insert([{ 
         name: item.name,
         sku: item.sku,
         unit: item.unit,
         type: itemType,
-        min_stock: item.min_stock,
-        stock: item.stock || 0
+        min_stock: item.min_stock
       }])
       .select()
       .single();
     
-    if (error) {
-      console.error('Supabase Error (addItem):', error);
-      throw error;
+    if (itemError) {
+      console.error('Supabase Error (addItem - item):', itemError);
+      throw itemError;
     }
+
+    // Create initial stock entry
+    const warehouseId = await this.getOrCreateDefaultWarehouse();
+    const { error: stockError } = await supabase
+      .from('stocks')
+      .insert([{
+        item_id: newItem.id,
+        warehouse_id: warehouseId,
+        quantity: item.stock || 0
+      }]);
+
+    if (stockError) {
+      console.error('Supabase Error (addItem - stock):', stockError);
+      // We don't throw here to avoid failing item creation, but user will see 0 stock
+    }
+
     return {
-      ...data,
-      category: data.type,
-      stock: data.stock || 0,
-      status: (data.stock || 0) <= (data.min_stock || 0) ? 'low_stock' : 'in_stock'
+      ...newItem,
+      category: newItem.type,
+      stock: item.stock || 0,
+      status: (item.stock || 0) < 10 ? 'low_stock' : 'in_stock'
     } as InventoryItem;
   },
 
   async updateStock(id: string, newStock: number, minStock: number) {
-    const { data, error } = await supabase
-      .from('items')
-      .update({ stock: newStock })
-      .eq('id', id)
+    const warehouseId = await this.getOrCreateDefaultWarehouse();
+    
+    // Upsert into stocks table
+    const { data: stockData, error: stockError } = await supabase
+      .from('stocks')
+      .upsert({ 
+        item_id: id, 
+        warehouse_id: warehouseId, 
+        quantity: newStock 
+      }, { onConflict: 'item_id,warehouse_id' })
       .select()
       .single();
     
-    if (error) {
-      console.error('Supabase Error (updateStock):', error);
-      throw error;
+    if (stockError) {
+      console.error('Supabase Error (updateStock):', stockError);
+      throw stockError;
     }
 
+    // Get item data to return full object
+    const { data: itemData, error: itemError } = await supabase
+      .from('items')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (itemError) throw itemError;
+
     return {
-      ...data,
-      category: data.type,
-      stock: data.stock || 0,
-      status: (data.stock || 0) <= (data.min_stock || 0) ? 'low_stock' : 'in_stock'
+      ...itemData,
+      category: itemData.type,
+      stock: newStock,
+      status: newStock < 10 ? 'low_stock' : 'in_stock'
     } as InventoryItem;
   },
 
@@ -100,7 +157,7 @@ export const inventoryService = {
         min_stock: item.min_stock
       })
       .eq('id', id)
-      .select()
+      .select('*, stocks(quantity)')
       .single();
 
     if (error) {
@@ -108,11 +165,13 @@ export const inventoryService = {
       throw error;
     }
 
+    const stockQty = data.stocks?.reduce((acc: number, s: any) => acc + (s.quantity || 0), 0) || 0;
+
     return {
       ...data,
       category: data.type,
-      stock: data.stock || 0,
-      status: (data.stock || 0) <= (data.min_stock || 0) ? 'low_stock' : 'in_stock'
+      stock: stockQty,
+      status: stockQty < 10 ? 'low_stock' : 'in_stock'
     } as InventoryItem;
   }
 };

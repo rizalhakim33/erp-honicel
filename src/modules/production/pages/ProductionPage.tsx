@@ -1,9 +1,11 @@
 import * as React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Plus, ListTree, Activity, Filter, Download, Trash2 } from 'lucide-react';
+import { Plus, ListTree, Activity, Filter, Download, Trash2, Upload } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ImportButton } from '@/components/ui/ImportButton';
+import { exportToCSV } from '@/lib/csv';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useProductionStore } from '../store/useProductionStore';
@@ -11,13 +13,31 @@ import { useDialogStore } from '@/store/useDialogStore';
 
 export default function ProductionPage() {
   const { open: openDialog } = useDialogStore();
-  const { workOrders, boms, machines, fetchWorkOrders, fetchBoms, fetchMachines, loading } = useProductionStore();
+  const { workOrders, boms, machines, fetchWorkOrders, fetchBoms, fetchMachines, createWorkOrder, loading } = useProductionStore();
 
   React.useEffect(() => {
     fetchWorkOrders();
     fetchBoms();
     fetchMachines();
   }, [fetchWorkOrders, fetchBoms, fetchMachines]);
+
+  const handleExportWorkOrders = () => {
+    exportToCSV(workOrders, 'production_work_orders');
+  };
+
+  const handleImportWorkOrders = async (data: any[]) => {
+    for (const wo of data) {
+      try {
+        await createWorkOrder({
+          bom_id: wo.bom_id,
+          machine_id: wo.machine_id,
+          target_quantity: Number(wo.target_quantity) || 100
+        });
+      } catch (e) {
+        console.error('Import failed for WO:', wo, e);
+      }
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -55,10 +75,8 @@ export default function ProductionPage() {
             <TabsTrigger value="efficiency" className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent px-0 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 data-[state=active]:text-zinc-900 transition-all">Performance_Metrics</TabsTrigger>
           </TabsList>
           <div className="hidden md:flex items-center gap-2 mb-2">
-            <Button variant="outline" size="sm" onClick={() => toast.info("Opening filter matrix...")} className="h-7 text-[9px] uppercase font-bold tracking-wider rounded-none">
-              <Filter className="w-3 h-3 mr-1" /> FILTER
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => toast.success("Generating production report...")} className="h-7 text-[9px] uppercase font-bold tracking-wider rounded-none">
+            <ImportButton onImport={handleImportWorkOrders} label="IMPORT_WO" className="h-7 text-[9px] uppercase font-bold tracking-wider rounded-none" />
+            <Button variant="outline" size="sm" onClick={handleExportWorkOrders} className="h-7 text-[9px] uppercase font-bold tracking-wider rounded-none">
               <Download className="w-3 h-3 mr-1" /> EXPORT
             </Button>
           </div>
