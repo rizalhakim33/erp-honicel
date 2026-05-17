@@ -62,14 +62,10 @@ export default function InventoryPage() {
           <ItemTable />
         </TabsContent>
         <TabsContent value="raw" className="mt-0 outline-none">
-          <div className="p-12 text-center text-zinc-400 bg-white rounded-xl border border-dashed border-zinc-200 font-mono text-xs uppercase tracking-tighter">
-            [ACCESSING RAW_MATRIX DATABASE...]
-          </div>
+          <ItemTable filterType="raw_material" title="Raw_Matrix" />
         </TabsContent>
         <TabsContent value="finished" className="mt-0 outline-none">
-           <div className="p-12 text-center text-zinc-400 bg-white rounded-xl border border-dashed border-zinc-200 font-mono text-xs uppercase tracking-tighter">
-            [RETRIEVING EXPORT_READY RECORDS...]
-          </div>
+          <ItemTable filterType="finished_good" title="Export_Ready" />
         </TabsContent>
       </Tabs>
     </div>

@@ -60,6 +60,15 @@ export const productionService = {
     return data as WorkOrder;
   },
 
+  async deleteWorkOrder(id: string) {
+    const { error } = await supabase
+      .from('work_orders')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  },
+
   async getBoms() {
     const { data, error } = await supabase
       .from('boms')

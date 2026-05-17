@@ -1,18 +1,20 @@
 import * as React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Plus, Search, Building2, FileText, PackageCheck, Filter, Download } from 'lucide-react';
+import { Plus, Search, Building2, FileText, PackageCheck, Filter, Download, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AddPODialog } from '../components/AddPODialog';
+import { AddSupplierDialog } from '../components/AddSupplierDialog';
 import { toast } from 'sonner';
 
 import { usePurchasingStore } from '../store/usePurchasingStore';
 import { cn } from '@/lib/utils';
 
 export default function PurchasingPage() {
-  const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
+  const [isAddPODialogOpen, setIsAddPODialogOpen] = React.useState(false);
+  const [isAddSupplierDialogOpen, setIsAddSupplierDialogOpen] = React.useState(false);
   const { purchaseOrders, suppliers, fetchPurchaseOrders, fetchSuppliers, loading } = usePurchasingStore();
 
   React.useEffect(() => {
@@ -29,7 +31,16 @@ export default function PurchasingPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button 
-            onClick={() => setIsAddDialogOpen(true)}
+            onClick={() => setIsAddSupplierDialogOpen(true)}
+            variant="outline"
+            size="sm" 
+            className="border-zinc-200 text-zinc-600 hover:text-zinc-900 text-[10px] font-bold uppercase tracking-widest h-9"
+          >
+            <Building2 className="w-3.5 h-3.5 mr-2" />
+            REGISTER_VENDOR
+          </Button>
+          <Button 
+            onClick={() => setIsAddPODialogOpen(true)}
             size="sm" 
             className="bg-zinc-900 text-white hover:bg-zinc-800 text-[10px] font-bold uppercase tracking-widest h-9"
           >
@@ -39,7 +50,8 @@ export default function PurchasingPage() {
         </div>
       </div>
 
-      <AddPODialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
+      <AddPODialog open={isAddPODialogOpen} onOpenChange={setIsAddPODialogOpen} />
+      <AddSupplierDialog open={isAddSupplierDialogOpen} onOpenChange={setIsAddSupplierDialogOpen} />
 
       <Tabs defaultValue="po" className="w-full">
         <div className="flex items-center justify-between mb-6 border-b border-zinc-200">
@@ -126,6 +138,21 @@ export default function PurchasingPage() {
                               RECEIVE_GOODS
                             </Button>
                           )}
+                          <Button 
+                            onClick={async () => {
+                              if (confirm(`Purge PO ${po.po_number} from registry?`)) {
+                                try {
+                                  await usePurchasingStore.getState().deletePurchaseOrder(po.id);
+                                  toast.success("Purchase Order purged");
+                                } catch (err) {
+                                  toast.error("Purge failed");
+                                }
+                              }
+                            }}
+                            variant="ghost" size="sm" className="h-8 w-8 p-0 text-zinc-300 hover:text-red-500"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))

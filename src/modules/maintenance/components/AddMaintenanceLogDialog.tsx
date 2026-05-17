@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Link } from "react-router-dom";
 import { useMaintenanceStore } from "../store/useMaintenanceStore";
 import { supabase } from "@/lib/supabase";
 
@@ -111,9 +112,18 @@ export function AddMaintenanceLogDialog({ open, onOpenChange }: AddMaintenanceLo
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {machines.map(m => (
-                        <SelectItem key={m.id} value={m.id} className="font-mono text-xs uppercase">{m.name}</SelectItem>
-                      ))}
+                      {machines.length > 0 ? (
+                        machines.map(m => (
+                          <SelectItem key={m.id} value={m.id} className="font-mono text-xs uppercase">{m.name}</SelectItem>
+                        ))
+                      ) : (
+                        <div className="p-2 text-[10px] font-mono uppercase text-zinc-400 text-center space-y-2">
+                          <p>No machines found</p>
+                          <Button asChild variant="outline" size="sm" className="w-full text-zinc-900 border-zinc-200 h-7 rounded-none">
+                            <Link to="/maintenance">Add Machine</Link>
+                          </Button>
+                        </div>
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage className="text-[9px] font-mono uppercase" />

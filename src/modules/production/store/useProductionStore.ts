@@ -12,6 +12,7 @@ interface ProductionState {
   fetchMachines: () => Promise<void>;
   createWorkOrder: (wo: Omit<WorkOrder, 'id' | 'wo_number' | 'status' | 'produced_quantity'>) => Promise<void>;
   updateWOStatus: (id: string, status: WorkOrder['status']) => Promise<void>;
+  deleteWorkOrder: (id: string) => Promise<void>;
 }
 
 export const useProductionStore = create<ProductionState>((set, get) => ({
@@ -69,5 +70,15 @@ export const useProductionStore = create<ProductionState>((set, get) => ({
     } catch (error: any) {
       set({ error: error.message });
     }
-  }
+  },
+
+  deleteWorkOrder: async (id) => {
+    try {
+      await productionService.deleteWorkOrder(id);
+      set({ workOrders: get().workOrders.filter(wo => wo.id !== id) });
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    }
+  },
 }));

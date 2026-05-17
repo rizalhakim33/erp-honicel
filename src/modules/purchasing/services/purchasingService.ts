@@ -53,6 +53,14 @@ export const purchasingService = {
     return data as PurchaseOrder;
   },
 
+  async deletePurchaseOrder(id: string) {
+    const { error } = await supabase
+      .from('purchase_orders')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+  },
+
   async getSuppliers() {
     const { data, error } = await supabase
       .from('suppliers')

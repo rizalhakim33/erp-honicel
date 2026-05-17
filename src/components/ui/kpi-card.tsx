@@ -54,11 +54,7 @@ export function KPICard({
           {unit && <span className="text-[10px] font-mono text-zinc-400 uppercase">{unit}</span>}
         </div>
 
-        {color === "blue" || color === "green" ? (
-          <div className="w-full bg-zinc-100 h-1 mt-3 rounded-full overflow-hidden">
-            <div className={cn("h-full", color === "blue" ? "bg-blue-600" : "bg-green-600")} style={{ width: '75%' }}></div>
-          </div>
-        ) : change !== undefined ? (
+        {change !== undefined ? (
           <div className="mt-2 flex items-center gap-1">
             <span className={cn(
               "text-[10px] font-bold",

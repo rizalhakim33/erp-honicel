@@ -123,7 +123,7 @@ export const columns: ColumnDef<InventoryItem>[] = [
   },
 ]
 
-export function ItemTable() {
+export function ItemTable({ filterType, title }: { filterType?: string; title?: string }) {
   const { items, fetchItems, deleteItem } = useInventoryStore()
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -135,8 +135,13 @@ export function ItemTable() {
     fetchItems()
   }, [fetchItems])
 
+  const filteredItems = React.useMemo(() => {
+    if (!filterType) return items;
+    return items.filter(item => item.category === filterType);
+  }, [items, filterType]);
+
   const table = useReactTable({
-    data: items,
+    data: filteredItems,
     columns: [
       ...columns.filter(c => (c as any).id !== 'actions'),
       {
@@ -189,6 +194,12 @@ export function ItemTable() {
 
   return (
     <div className="w-full space-y-4">
+      {title && (
+        <div className="flex items-center gap-2 mb-2">
+          <div className="h-4 w-1 bg-zinc-900" />
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] font-mono text-zinc-500">{title}</h2>
+        </div>
+      )}
       <div className="flex items-center justify-between gap-4">
         <div className="flex-1 flex items-center gap-2">
           <Input

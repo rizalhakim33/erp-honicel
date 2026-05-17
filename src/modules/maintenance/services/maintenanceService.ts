@@ -51,5 +51,13 @@ export const maintenanceService = {
       .single();
     if (error) throw error;
     return data;
+  },
+
+  async deleteLog(id: string) {
+    const { error } = await supabase
+      .from('maintenance_logs')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
   }
 };

@@ -10,6 +10,7 @@ interface PurchasingState {
   fetchSuppliers: () => Promise<void>;
   createPO: (po: Omit<PurchaseOrder, 'id' | 'po_number' | 'status' | 'order_date'>) => Promise<void>;
   updatePOStatus: (id: string, status: PurchaseOrder['status']) => Promise<void>;
+  deletePurchaseOrder: (id: string) => Promise<void>;
 }
 
 export const usePurchasingStore = create<PurchasingState>((set, get) => ({
@@ -44,6 +45,16 @@ export const usePurchasingStore = create<PurchasingState>((set, get) => ({
       await purchasingService.updatePOStatus(id, status);
       const orders = get().purchaseOrders.map(o => o.id === id ? { ...o, status } : o);
       set({ purchaseOrders: orders });
+    } catch (error: any) {
+      set({ error: error.message });
+      throw error;
+    }
+  },
+
+  deletePurchaseOrder: async (id) => {
+    try {
+      await purchasingService.deletePurchaseOrder(id);
+      set({ purchaseOrders: get().purchaseOrders.filter(po => po.id !== id) });
     } catch (error: any) {
       set({ error: error.message });
       throw error;

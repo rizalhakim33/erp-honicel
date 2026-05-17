@@ -1,17 +1,19 @@
 import * as React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Plus, Search, Factory, ListTree, Activity, AlertCircle, Filter, Download } from 'lucide-react';
+import { Plus, Search, Factory, ListTree, Activity, AlertCircle, Filter, Download, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AddWODialog } from '../components/AddWODialog';
+import { AddBOMDialog } from '../components/AddBOMDialog';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useProductionStore } from '../store/useProductionStore';
 
 export default function ProductionPage() {
-  const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
+  const [isAddWODialogOpen, setIsAddWODialogOpen] = React.useState(false);
+  const [isAddBOMDialogOpen, setIsAddBOMDialogOpen] = React.useState(false);
   const { workOrders, boms, machines, fetchWorkOrders, fetchBoms, fetchMachines, loading } = useProductionStore();
 
   React.useEffect(() => {
@@ -29,7 +31,16 @@ export default function ProductionPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button 
-            onClick={() => setIsAddDialogOpen(true)}
+            onClick={() => setIsAddBOMDialogOpen(true)}
+            variant="outline"
+            size="sm" 
+            className="border-zinc-200 text-zinc-600 hover:text-zinc-900 text-[10px] font-bold uppercase tracking-widest h-9"
+          >
+            <ListTree className="w-3.5 h-3.5 mr-2" />
+            ARCHITECT_BOM
+          </Button>
+          <Button 
+            onClick={() => setIsAddWODialogOpen(true)}
             size="sm" 
             className="bg-zinc-900 text-white hover:bg-zinc-800 text-[10px] font-bold uppercase tracking-widest h-9"
           >
@@ -39,7 +50,8 @@ export default function ProductionPage() {
         </div>
       </div>
 
-      <AddWODialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
+      <AddWODialog open={isAddWODialogOpen} onOpenChange={setIsAddWODialogOpen} />
+      <AddBOMDialog open={isAddBOMDialogOpen} onOpenChange={setIsAddBOMDialogOpen} />
 
       <Tabs defaultValue="work-orders" className="w-full">
         <div className="flex items-center justify-between mb-6 border-b border-zinc-200">
@@ -104,6 +116,21 @@ export default function ProductionPage() {
                              onClick={() => toast.info(`Viewing details for ${wo.wo_number}...`)}
                              variant="outline" size="sm" className="rounded-none font-mono text-[10px] uppercase"
                            >Details</Button>
+                           <Button 
+                             onClick={async () => {
+                               if (confirm(`Decommission Work Order ${wo.wo_number}?`)) {
+                                 try {
+                                   await useProductionStore.getState().deleteWorkOrder(wo.id);
+                                   toast.success("Work Order deleted");
+                                 } catch (err) {
+                                   toast.error("Deletion failed");
+                                 }
+                               }
+                             }}
+                             variant="ghost" size="sm" className="h-8 w-8 p-0 text-zinc-300 hover:text-red-500"
+                           >
+                              <Trash2 className="w-3.5 h-3.5" />
+                           </Button>
                            {wo.status !== 'completed' && wo.status !== 'cancelled' && (
                              <Button 
                                onClick={async () => {
@@ -130,7 +157,7 @@ export default function ProductionPage() {
               <div className="p-12 text-center text-zinc-400 border border-zinc-100 rounded-xl bg-zinc-50/30">
                 <p className="font-mono text-[10px] uppercase italic">No active production streams detected</p>
                 <Button 
-                  onClick={() => setIsAddDialogOpen(true)}
+                  onClick={() => setIsAddWODialogOpen(true)}
                   variant="link" 
                   className="mt-2 text-blue-600 font-mono text-[10px] uppercase"
                 >

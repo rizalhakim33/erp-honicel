@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Link } from "react-router-dom";
 import { useQCStore } from "../store/useQCStore";
 import { supabase } from "@/lib/supabase";
 
@@ -110,9 +111,18 @@ export function AddQCLogDialog({ open, onOpenChange }: AddQCLogDialogProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {workOrders.map(wo => (
-                        <SelectItem key={wo.id} value={wo.id} className="font-mono text-xs uppercase">{wo.wo_number}</SelectItem>
-                      ))}
+                      {workOrders.length > 0 ? (
+                        workOrders.map(wo => (
+                          <SelectItem key={wo.id} value={wo.id} className="font-mono text-xs uppercase">{wo.wo_number}</SelectItem>
+                        ))
+                      ) : (
+                        <div className="p-2 text-[10px] font-mono uppercase text-zinc-400 text-center space-y-2">
+                          <p>No Work Orders found</p>
+                          <Button asChild variant="outline" size="sm" className="w-full text-zinc-900 border-zinc-200 h-7 rounded-none">
+                            <Link to="/production">Add Work Order</Link>
+                          </Button>
+                        </div>
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage className="text-[9px] font-mono uppercase" />

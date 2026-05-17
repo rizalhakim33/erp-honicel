@@ -29,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Link } from "react-router-dom";
 import { purchasingService } from "../services/purchasingService";
 
 const formSchema = z.object({
@@ -115,9 +116,18 @@ export function AddPODialog({ open, onOpenChange, onSuccess }: AddPODialogProps)
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {suppliers.map(s => (
-                        <SelectItem key={s.id} value={s.id} className="font-mono text-xs uppercase">{s.name}</SelectItem>
-                      ))}
+                      {suppliers.length > 0 ? (
+                        suppliers.map(s => (
+                          <SelectItem key={s.id} value={s.id} className="font-mono text-xs uppercase">{s.name}</SelectItem>
+                        ))
+                      ) : (
+                        <div className="p-2 text-[10px] font-mono uppercase text-zinc-400 text-center space-y-2">
+                          <p>No vendors found</p>
+                          <Button asChild variant="outline" size="sm" className="w-full text-zinc-900 border-zinc-200 h-7 rounded-none">
+                            <Link to="/purchasing">Add Vendor</Link>
+                          </Button>
+                        </div>
+                      )}
                     </SelectContent>
                   </Select>
                   <FormMessage className="text-[9px] font-mono uppercase" />

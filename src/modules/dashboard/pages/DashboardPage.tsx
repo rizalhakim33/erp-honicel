@@ -203,11 +203,11 @@ export default function DashboardPage() {
 
         {/* Machine Status */}
         <motion.div variants={item} className="lg:col-span-4">
-          <Card className="border border-zinc-200 rounded-xl shadow-none bg-zinc-950 text-white h-full">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Machine Center (Realtime)</CardTitle>
+          <Card className="border border-zinc-200 rounded-xl shadow-none bg-white h-full flex flex-col">
+            <CardHeader className="pb-4 border-b border-zinc-50 bg-zinc-50/30">
+              <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 font-mono">Operations_Terminal</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 p-6">
               {dashboardMachines.length > 0 ? (
                 dashboardMachines.map((m) => {
                   const health = m.status === 'operational' ? 100 : m.status === 'maintenance' ? 45 : 10;
@@ -220,15 +220,15 @@ export default function DashboardPage() {
                             "w-2 h-2 rounded-full",
                             color === 'green' ? "bg-green-500 animate-pulse" : color === 'amber' ? "bg-amber-500" : "bg-red-500"
                           )}></div>
-                          <span className="text-xs font-mono tracking-tight text-zinc-100">{m.name}</span>
+                          <span className="text-xs font-mono tracking-tight text-zinc-900 font-bold">{m.name}</span>
                         </div>
-                        <span className="text-[10px] font-mono text-zinc-500 uppercase">{m.status}</span>
+                        <span className="text-[9px] font-mono text-zinc-400 uppercase italic">{m.status}</span>
                       </div>
-                      <div className="h-1 w-full bg-zinc-800 rounded-full overflow-hidden">
+                      <div className="h-1 w-full bg-zinc-100 rounded-full overflow-hidden">
                         <div 
                           className={cn(
                             "h-full transition-all duration-1000",
-                            color === 'green' ? "bg-blue-500" : color === 'amber' ? "bg-amber-500" : "bg-red-500"
+                            color === 'green' ? "bg-zinc-900" : color === 'amber' ? "bg-amber-400" : "bg-red-500"
                           )} 
                           style={{ width: `${health}%` }}
                         />
@@ -237,23 +237,23 @@ export default function DashboardPage() {
                   );
                 })
               ) : (
-                <div className="p-4 text-center font-mono text-[10px] uppercase text-zinc-600 italic">No assets detected</div>
+                <div className="p-4 text-center font-mono text-[10px] uppercase text-zinc-400 italic">No assets detected</div>
               )}
               
-              <div className="mt-8 pt-6 border-t border-zinc-800">
+              <div className="mt-4 pt-4 border-t border-zinc-100">
                 <div className="flex justify-between items-end">
                    <div>
-                      <div className="text-[10px] text-zinc-500 uppercase font-mono mb-1">Avg OEE</div>
-                      <div className="text-2xl font-mono text-zinc-100">88.4%</div>
+                      <div className="text-[10px] text-zinc-400 uppercase font-mono mb-1">Utilization</div>
+                      <div className="text-xl font-mono text-zinc-900 font-bold tracking-tighter">88.4%</div>
                    </div>
                    <div className="text-right">
-                      <div className="text-[10px] text-zinc-500 uppercase font-mono mb-1">Downtime</div>
-                      <div className="text-2xl font-mono text-amber-500">42m</div>
+                      <div className="text-[10px] text-zinc-400 uppercase font-mono mb-1">Idle_Time</div>
+                      <div className="text-xl font-mono text-amber-600 font-bold tracking-tighter">42m</div>
                    </div>
                 </div>
               </div>
 
-              <Button asChild className="w-full mt-6 bg-zinc-100 text-zinc-950 hover:bg-white text-[10px] font-bold uppercase tracking-widest h-10" size="sm">
+              <Button asChild className="w-full mt-4 bg-zinc-900 text-white hover:bg-zinc-800 text-[10px] font-bold uppercase tracking-widest h-10 rounded-none" size="sm">
                 <Link to="/maintenance">SYSTEM_DIAGNOSTICS</Link>
               </Button>
             </CardContent>

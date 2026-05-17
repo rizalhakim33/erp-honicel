@@ -19,13 +19,20 @@ export const inventoryService = {
   },
 
   async addItem(item: Omit<InventoryItem, 'id' | 'status'>) {
+    let itemType = 'other';
+    const cat = item.category.toLowerCase();
+    if (cat.includes('raw')) itemType = 'raw_material';
+    else if (cat.includes('finished')) itemType = 'finished_good';
+    else if (cat.includes('chemical')) itemType = 'chemical';
+    else if (cat.includes('packaging')) itemType = 'packaging';
+
     const { data, error } = await supabase
       .from('items')
       .insert([{ 
         name: item.name,
         sku: item.sku,
         unit: item.unit,
-        type: item.category === 'Raw Material' ? 'raw_material' : 'finished_good',
+        type: itemType,
         min_stock: item.min_stock
       }])
       .select()
@@ -35,7 +42,7 @@ export const inventoryService = {
     return {
       ...data,
       category: data.type,
-      stock: 0,
+      stock: item.stock || 0, // In reality this would be a separate transaction, but for UI we simulate
       status: 'in_stock'
     } as InventoryItem;
   },
