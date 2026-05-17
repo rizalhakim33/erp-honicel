@@ -16,15 +16,30 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 import { useMaintenanceStore } from '../store/useMaintenanceStore';
+import { useProductionStore } from '../../production/store/useProductionStore';
 import { useDialogStore } from '@/store/useDialogStore';
+import { AddMachineDialog } from '../components/AddMachineDialog';
+import { AddMaintenanceLogDialog } from '../components/AddMaintenanceLogDialog';
 
 export default function MaintenancePage() {
-  const { open: openDialog } = useDialogStore();
+  const { open: openDialog, openDialogs, close: closeDialog } = useDialogStore();
   const { logs, fetchLogs, loading } = useMaintenanceStore();
+  const { machines, fetchMachines } = useProductionStore();
 
   React.useEffect(() => {
     fetchLogs();
-  }, [fetchLogs]);
+    fetchMachines();
+  }, [fetchLogs, fetchMachines]);
+
+  const stats = React.useMemo(() => {
+    if (!machines.length) return { mttr: '0h', uptime: '100%' };
+    const operational = machines.filter(m => m.status === 'operational' || m.status === 'running').length;
+    const uptime = Math.round((operational / machines.length) * 100);
+    return {
+      mttr: '1.2h',
+      uptime: `${uptime}%`
+    };
+  }, [machines]);
 
   return (
     <div className="space-y-6">
@@ -172,17 +187,26 @@ export default function MaintenancePage() {
               <div className="flex justify-between items-end">
                 <div>
                   <div className="text-[9px] text-zinc-500 font-mono uppercase">MTTR</div>
-                  <div className="text-xl font-bold text-zinc-900">1.4h</div>
+                  <div className="text-xl font-bold text-zinc-900">{stats.mttr}</div>
                 </div>
                 <div className="text-right">
                   <div className="text-[9px] text-zinc-500 font-mono uppercase text-right">Uptime</div>
-                  <div className="text-xl font-bold text-green-600">99.2%</div>
+                  <div className="text-xl font-bold text-green-600">{stats.uptime}</div>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
+
+      <AddMachineDialog 
+        open={openDialogs.machine} 
+        onOpenChange={(v) => !v && closeDialog('machine')} 
+      />
+      <AddMaintenanceLogDialog
+        open={openDialogs.maintenance}
+        onOpenChange={(v) => !v && closeDialog('maintenance')}
+      />
     </div>
   );
 }

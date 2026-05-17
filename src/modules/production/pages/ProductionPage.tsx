@@ -8,12 +8,26 @@ import { ImportButton } from '@/components/ui/ImportButton';
 import { exportToCSV } from '@/lib/csv';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { AddWODialog } from '../components/AddWODialog';
+import { AddBOMDialog } from '../components/AddBOMDialog';
+import { WODetailsDialog } from '../components/WODetailsDialog';
 import { useProductionStore } from '../store/useProductionStore';
 import { useDialogStore } from '@/store/useDialogStore';
 
 export default function ProductionPage() {
-  const { open: openDialog } = useDialogStore();
-  const { workOrders, boms, machines, fetchWorkOrders, fetchBoms, fetchMachines, createWorkOrder, loading } = useProductionStore();
+  const { open: openDialog, openDialogs, dialogData, close: closeDialog } = useDialogStore();
+  const { 
+    workOrders, 
+    boms, 
+    machines, 
+    fetchWorkOrders, 
+    fetchBoms, 
+    fetchMachines, 
+    createWorkOrder, 
+    updateWOStatus,
+    deleteWorkOrder,
+    loading 
+  } = useProductionStore();
 
   React.useEffect(() => {
     fetchWorkOrders();
@@ -143,39 +157,48 @@ export default function ProductionPage() {
                              </div>
                           </div>
                        </div>
-                       <div className="p-6 border-l border-zinc-100 flex items-center gap-2">
+                       <div className="p-6 border-l border-zinc-100 flex items-center gap-2 relative z-30">
                            <Button 
-                             onClick={() => toast.info(`Viewing details for ${wo.wo_number}...`)}
-                             variant="outline" size="sm" className="rounded-none font-mono text-[10px] uppercase"
+                             onClick={(e) => {
+                               e.stopPropagation();
+                               openDialog('wo_details', wo);
+                             }}
+                             variant="outline" 
+                             size="sm" 
+                             className="rounded-none font-mono text-[10px] uppercase cursor-pointer"
                            >Details</Button>
                            <Button 
-                             onClick={async () => {
-                               if (confirm(`Decommission Work Order ${wo.wo_number}?`)) {
+                             onClick={async (e) => {
+                               e.stopPropagation();
+                               if (window.confirm(`Decommission Work Order ${wo.wo_number}?`)) {
                                  try {
-                                   await useProductionStore.getState().deleteWorkOrder(wo.id);
+                                   await deleteWorkOrder(wo.id);
                                    toast.success("Work Order deleted");
                                  } catch (err) {
                                    toast.error("Deletion failed");
                                  }
                                }
                              }}
-                             variant="ghost" size="sm" className="h-8 w-8 p-0 text-zinc-300 hover:text-red-500"
+                             variant="ghost" 
+                             size="sm" 
+                             className="h-8 w-8 p-0 text-zinc-500 hover:text-red-600 rounded-none cursor-pointer"
                            >
                               <Trash2 className="w-3.5 h-3.5" />
                            </Button>
                            {wo.status !== 'completed' && wo.status !== 'cancelled' && (
                              <Button 
-                               onClick={async () => {
+                               onClick={async (e) => {
+                                 e.stopPropagation();
                                  const nextStatus = wo.status === 'planned' ? 'in_progress' : 'completed';
                                  try {
-                                   const { updateWOStatus } = useProductionStore.getState();
-                                   await updateWOStatus(wo.id, nextStatus);
+                                   await updateWOStatus(wo.id, nextStatus as any);
                                    toast.success(`Work Order ${wo.wo_number} transitioned to ${nextStatus}`);
                                  } catch (err) {
                                    toast.error("Failed to update process state");
                                  }
                                }}
-                               size="sm" className="bg-zinc-900 text-white rounded-none font-mono text-[10px] uppercase"
+                               size="sm" 
+                               className="bg-zinc-900 text-white rounded-none font-mono text-[10px] uppercase cursor-pointer px-4"
                              >
                                {wo.status === 'planned' ? 'START_PROD' : 'MARK_DONE'}
                              </Button>
@@ -351,6 +374,20 @@ export default function ProductionPage() {
           </div>
         </TabsContent>
       </Tabs>
+
+      <AddBOMDialog 
+        open={openDialogs.bom} 
+        onOpenChange={(v) => !v && closeDialog('bom')} 
+      />
+      <AddWODialog 
+        open={openDialogs.wo} 
+        onOpenChange={(v) => !v && closeDialog('wo')} 
+      />
+      <WODetailsDialog
+        open={openDialogs.wo_details}
+        onOpenChange={(v) => !v && closeDialog('wo_details')}
+        workOrder={dialogData.wo_details}
+      />
     </div>
   );
 }

@@ -57,9 +57,9 @@ export default function DashboardPage() {
   }, [fetchWorkOrders, fetchMachines, fetchItems, fetchLogs]);
 
   const activeWOs = workOrders.filter(wo => wo.status === 'in_progress' || wo.status === 'planned');
-  const criticalStock = items.filter(i => i.stock <= i.min_stock);
-  const recentWOs = workOrders.slice(0, 4);
-  const dashboardMachines = machines.slice(0, 3);
+  const criticalStock = items.filter(i => i.stock <= (i.min_stock || 0));
+  const dashboardActiveWOs = activeWOs.slice(0, 4);
+  const dashboardMachines = machines.slice(0, 4);
 
   const utilization = React.useMemo(() => {
     if (!machines.length) return 0;
@@ -154,8 +154,8 @@ export default function DashboardPage() {
                     <TableRow>
                        <TableCell colSpan={4} className="h-24 text-center font-mono text-[10px] uppercase italic text-zinc-400">Syncing with production terminal...</TableCell>
                     </TableRow>
-                  ) : recentWOs.length > 0 ? (
-                    recentWOs.map((wo) => {
+                  ) : dashboardActiveWOs.length > 0 ? (
+                    dashboardActiveWOs.map((wo) => {
                       return (
                         <TableRow key={wo.id} className="hover:bg-zinc-50 transition-colors border-none group">
                           <TableCell className="font-mono text-xs text-zinc-500 py-4">{wo.wo_number}</TableCell>

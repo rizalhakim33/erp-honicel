@@ -4,6 +4,8 @@ import { Package, Search, Plus, Filter, Download, AlertTriangle, TrendingUp } fr
 import { Button } from '@/components/ui/button';
 import { ItemTable } from '../components/ItemTable';
 import { AddItemDialog } from '../components/AddItemDialog';
+import { AdjustStockDialog } from '../components/AdjustStockDialog';
+import { AddProductDialog } from '../../production/components/AddProductDialog';
 import { KPICard } from '@/components/ui/kpi-card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from 'sonner';
@@ -13,7 +15,7 @@ import * as React from 'react';
 import { useDialogStore } from '@/store/useDialogStore';
 
 export default function InventoryPage() {
-  const { open: openDialog } = useDialogStore();
+  const { open: openDialog, openDialogs, dialogData, close: closeDialog } = useDialogStore();
   const { items, fetchItems, loading } = useInventoryStore();
 
   React.useEffect(() => {
@@ -22,7 +24,7 @@ export default function InventoryPage() {
 
   const totalSKUs = items.length;
   const productCount = items.filter(i => i.category === 'finished_good').length;
-  const criticalItems = items.filter(i => i.status !== 'in_stock').length;
+  const criticalItemsCount = items.filter(i => i.stock <= (i.min_stock || 0)).length;
 
   return (
     <div className="space-y-6">
@@ -54,7 +56,7 @@ export default function InventoryPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <KPICard title="Total Assets" value={totalSKUs.toString()} icon={Package} color="slate" />
         <KPICard title="End Products" value={productCount.toString()} icon={TrendingUp} color="blue" />
-        <KPICard title="Critical items" value={criticalItems.toString()} icon={AlertTriangle} color="red" />
+        <KPICard title="Critical items" value={criticalItemsCount.toString()} icon={AlertTriangle} color="red" />
       </div>
 
       <Tabs defaultValue="all" className="w-full">
@@ -76,6 +78,21 @@ export default function InventoryPage() {
           <ItemTable filterType="finished_good" title="Export_Ready" />
         </TabsContent>
       </Tabs>
+
+      <AddItemDialog 
+        open={openDialogs.item} 
+        onOpenChange={(v) => !v && closeDialog('item')} 
+        item={dialogData.item}
+      />
+      <AddProductDialog
+        open={openDialogs.product}
+        onOpenChange={(v) => !v && closeDialog('product')}
+      />
+      <AdjustStockDialog
+        open={openDialogs.adjustStock}
+        onOpenChange={(v) => !v && closeDialog('adjustStock')}
+        item={dialogData.adjustStock}
+      />
     </div>
   );
 }

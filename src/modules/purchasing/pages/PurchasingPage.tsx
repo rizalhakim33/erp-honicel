@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { useDialogStore } from '@/store/useDialogStore';
 
 export default function PurchasingPage() {
-  const { open: openDialog } = useDialogStore();
+  const { open: openDialog, openDialogs, close: closeDialog } = useDialogStore();
   const { purchaseOrders, suppliers, fetchPurchaseOrders, fetchSuppliers, loading } = usePurchasingStore();
 
   React.useEffect(() => {
@@ -237,6 +237,15 @@ export default function PurchasingPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <AddPODialog 
+        open={openDialogs.po} 
+        onOpenChange={(v) => !v && closeDialog('po')} 
+      />
+      <AddSupplierDialog
+        open={openDialogs.supplier}
+        onOpenChange={(v) => !v && closeDialog('supplier')}
+      />
     </div>
   );
 }
